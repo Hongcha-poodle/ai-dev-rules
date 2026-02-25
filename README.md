@@ -9,11 +9,14 @@ ai-dev-rules/
 ├── .ai/
 │   ├── core.md                 # 전역 AI 오케스트레이터 지침
 │   ├── config/quality.yaml     # LSP/테스트 품질 게이트 설정
-│   └── rules/                  # 전역 규칙
-│       ├── development/        # 에이전트 작성 가이드
-│       ├── integration/        # MCP 통합 가이드
-│       ├── language/           # 언어별 규칙 (go.md, python.md 등)
-│       └── workflow/           # SPEC, 팀 워크플로우
+│   ├── rules/                  # 전역 규칙
+│   │   ├── architecture/       # 아키텍처 설계 원칙
+│   │   ├── development/        # 에이전트 작성 가이드
+│   │   ├── integration/        # MCP 통합 가이드
+│   │   ├── language/           # 언어별 규칙 (go.md, python.md 등)
+│   │   ├── security/           # 보안 가이드 (OWASP 기반)
+│   │   ├── testing/            # 테스트 전략 가이드
+│   │   └── workflow/           # SPEC, 팀 워크플로우
 │   └── skills/                 # 도구별 스킬 및 확장 기능
 └── templates/
     ├── setup-project.ps1                   # 새 프로젝트 셋업 스크립트

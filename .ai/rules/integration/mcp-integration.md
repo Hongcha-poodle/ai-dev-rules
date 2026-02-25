@@ -24,23 +24,28 @@ Model Context Protocol (MCP) 서버 및 UltraThink와의 통합 방법을 설명
 - 최소 권한 원칙 적용
 - 로그 및 모니터링 설정
 
-## UltraThink 통합
+## 확장 사고 (Extended Thinking) 활용
+
+Claude의 확장 사고 기능은 복잡한 추론이 필요한 경우 API 레벨에서 활성화됩니다.
 
 ### 활용 시나리오
-- 복잡한 문제 해결
-- 다단계 추론
-- 의사결정 지원
+- 복잡한 아키텍처 결정
+- 다단계 알고리즘 설계
+- 트레이드오프 분석
 
-### 호출 패턴
-```markdown
-@ultrathink
-[문제 설명 및 컨텍스트]
+### API 설정 예시
+```json
+{
+  "thinking": {
+    "type": "enabled",
+    "budget_tokens": 10000
+  }
+}
 ```
 
-### 결과 활용
-- 추론 과정 검토
-- 제안된 솔루션 평가
-- 구현 반영
+### Claude Code에서의 활용
+Claude Code는 자동으로 내부적으로 사고 단계를 활용합니다.
+MCP 도구를 통한 복잡한 작업에서 AI가 추론 과정을 거쳐 결과를 반환합니다.
 
 ## 커스텀 도구 개발
 

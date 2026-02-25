@@ -18,11 +18,11 @@ The AI acts strictly as the Strategic Orchestrator. Direct implementation of com
 
 ## 3. Agent Delegation Strategy
 Do not list full agent capabilities here. Use the following heuristic decision tree to route tasks:
-1. Read-only codebase exploration? → Use `Explore` agent
-2. External documentation/API research? → Use `WebSearch`, `WebFetch` MCP tools
-3. Domain expertise needed? → Use `expert-[domain]` agent
-4. Workflow coordination needed? → Use `manager-[workflow]` agent
-5. Complex multi-step tasks? → Use `manager-strategy` agent
+1. Read-only codebase exploration? → Delegate to an exploration agent or use available search tools
+2. External documentation/API research? → Use web search/fetch tools available in the environment
+3. Domain expertise needed? → Delegate to a domain-specific expert agent
+4. Workflow coordination needed? → Delegate to a workflow manager agent
+5. Complex multi-step tasks? → Delegate to a general-purpose strategy agent
 
 *For the complete agent catalog and usage specifications, dynamically reference `@.ai/rules/development/agent-authoring.md`.*
 
@@ -32,11 +32,11 @@ Do not list full agent capabilities here. Use the following heuristic decision t
 - **Conflict Prevention**: Analyze overlapping file access patterns and build dependency graphs prior to executing parallel file writes.
 
 ## 5. User Interaction & External Interfaces
-- **Subagent Isolation**: Subagents invoked via `Task()` operate in stateless contexts and cannot interact with users directly.
-- **Decision Making**: The Orchestrator must use `AskUserQuestion` to collect user preferences before passing parameters to a subagent. (Max 4 options, no emojis).
-- **Web Search Protocol**: Only include verified URLs with sources. Never generate or hallucinate URLs not strictly found in WebSearch results.
+- **Subagent Isolation**: Subagents operate in stateless contexts and cannot interact with users directly. The Orchestrator must collect all necessary user input before delegating.
+- **Decision Making**: The Orchestrator must ask the user for preferences before passing parameters to a subagent. Provide clear options (max 4), no emojis.
+- **Web Search Protocol**: Only include verified URLs with sources. Never generate or hallucinate URLs not found in actual search results.
 
 ## 6. Progressive Disclosure & Advanced Architecture
 - **Token Optimization**: Follow the 3-level Progressive Disclosure system. Metadata is loaded initially; full Rule/Skill content is injected on-demand when triggers match. Available skills are located in `@.ai/skills/`.
-- **Error Recovery**: Delegate integration errors to `expert-devops` and logic errors to `expert-debug`. Do not attempt infinite loops of self-correction.
-- **Agent Teams (Experimental)**: If `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is active, utilize `TeamCreate` and `SendMessage` APIs for parallel phase execution. Reference `@.ai/rules/workflow/team-workflow.md`.
+- **Error Recovery**: Delegate integration errors to a DevOps expert agent and logic errors to a debug expert agent. Do not attempt infinite loops of self-correction.
+- **Agent Teams**: When the environment supports parallel agent execution, utilize team-based parallel phase execution. Reference `@.ai/rules/workflow/team-workflow.md`.

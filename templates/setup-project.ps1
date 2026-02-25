@@ -63,8 +63,11 @@ Download-File -RemotePath ".ai/config/quality.yaml" -LocalPath (Join-Path $DestA
 
 # rules
 $rules = @(
+    "architecture/architecture-guide.md",
     "development/agent-authoring.md",
     "integration/mcp-integration.md",
+    "security/security-guide.md",
+    "testing/testing-guide.md",
     "workflow/spec-workflow.md",
     "workflow/team-workflow.md"
 )

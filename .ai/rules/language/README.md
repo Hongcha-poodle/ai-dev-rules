@@ -6,7 +6,7 @@ CLAUDE.core.md §4에서 참조됩니다.
 ## 파일 명명 규칙
 
 ```
-.claude/rules/language/
+.ai/rules/language/
 ├── go.md          # Go 언어 규칙 (테스트 명령어, 포매팅 등)
 ├── python.md      # Python 규칙
 ├── typescript.md  # TypeScript/JavaScript 규칙
