@@ -1,4 +1,4 @@
-# CLAUDE Rules - [프로젝트 이름]
+# AI Assistant Instructions - [프로젝트 이름]
 
 ## 프로젝트 개요
 

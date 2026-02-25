@@ -1,0 +1,18 @@
+# Quality Gates Configuration
+# LSP Quality Gates - referenced by CLAUDE.core.md §4
+
+gates:
+  lsp:
+    errors: 0          # Zero compile/type errors required
+    type_errors: 0     # Zero type errors required
+    lint_errors: 0     # Zero lint errors required
+
+  test:
+    coverage_min: 80   # Minimum test coverage percentage
+    fail_on_skip: false
+
+  review:
+    require_approval: true
+
+# Language-specific overrides
+overrides: {}
