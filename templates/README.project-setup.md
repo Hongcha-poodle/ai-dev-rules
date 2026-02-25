@@ -22,18 +22,26 @@ git init
 가장 쉬운 방법은 제공된 셋업 스크립트를 사용하는 것입니다:
 
 ```powershell
+# ai-dev-rules 저장소 클론 (아직 없는 경우)
+# git clone https://github.com/Hongcha-poodle/ai-dev-rules.git C:\path\to\ai-dev-rules
+
 # 셋업 스크립트 실행
 & "C:\path\to\ai-dev-rules\templates\setup-project.ps1" -ProjectPath $PWD
 ```
 
+스크립트를 실행하면 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity)를 선택**하는 프롬프트가 나타나며, 선택한 도구에 맞는 설정 파일만 복사됩니다.
+
 수동으로 설정하려면 다음을 수행하세요:
 1. 프로젝트 루트에 `.ai` 폴더 생성
 2. `ai-dev-rules/.ai/core.md` 및 `ai-dev-rules/.ai/rules`를 프로젝트의 `.ai/` 폴더 안에 심볼릭 링크로 연결
-3. `ai-dev-rules/templates/entrypoints/`에 있는 진입점 파일들(`CLAUDE.md`, `.github/copilot-instructions.md`, `.antigravityrules`)을 프로젝트에 복사
+3. `ai-dev-rules/templates/entrypoints/`에 있는 진입점 파일들 중 사용하는 도구에 맞는 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `rules.md`)을 프로젝트의 적절한 위치에 복사
+   - Claude Code: `CLAUDE.md`
+   - VS Code (GitHub Copilot): `.github/copilot-instructions.md`
+   - Google Antigravity: `.agent/rules/rules.md`
 
 ### 3. 프로젝트별 설정 커스터마이징
 
-복사된 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.antigravityrules`) 하단을 열어 다음 섹션을 프로젝트에 맞게 수정:
+복사된 진입점 파일 하단을 열어 다음 섹션을 프로젝트에 맞게 수정:
 
 - 프로젝트 개요
 - 기술 스택
@@ -47,10 +55,10 @@ git init
 ```markdown
 ## 전역 규칙
 
-이 프로젝트는 [AI Dev Rules](path/to/ai-dev-rules)의 전역 규칙을 따릅니다.
+이 프로젝트는 [AI Dev Rules](https://github.com/Hongcha-poodle/ai-dev-rules)의 전역 규칙을 따릅니다.
 
 상세 내용은 다음을 참조:
-- [SPEC Workflow](path/to/ai-dev-rules/.ai/rules/workflow/spec-workflow.md)
+- [SPEC Workflow](https://github.com/Hongcha-poodle/ai-dev-rules/blob/main/.ai/rules/workflow/spec-workflow.md)
 ```
 
 ### 5. IDE 설정
@@ -73,7 +81,9 @@ my-new-project/
 │  ├─ core.md
 │  └─ rules/
 ├─ CLAUDE.md                    # Claude Code 진입점
-├─ .antigravityrules            # Google Antigravity 진입점
+├─ .agent/
+│  └─ rules/
+│     └─ rules.md               # Google Antigravity 진입점
 ├─ .github/
 │  └─ copilot-instructions.md   # GitHub Copilot 진입점
 ├─ src/                         # 소스 코드
@@ -102,7 +112,7 @@ my-new-project/
 팀원들과 다음을 공유하세요:
 
 1. 진입점 파일들 - 프로젝트별 규칙
-2. [AI Dev Rules 저장소](path/to/ai-dev-rules) - 전역 규칙
+2. [AI Dev Rules 저장소](https://github.com/Hongcha-poodle/ai-dev-rules) - 전역 규칙
 3. 이 설정 가이드
 
 ### 규칙 업데이트

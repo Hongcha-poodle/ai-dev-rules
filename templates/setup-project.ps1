@@ -5,9 +5,10 @@
 #   .\setup-project.ps1 -ProjectPath "C:\path\to\my-project"
 #
 # 하는 일:
-#   1. .ai/rules  → ai-dev-rules/.ai/rules 심볼릭 링크 생성
-#   2. .ai/core.md → ai-dev-rules/.ai/core.md 심볼릭 링크 생성 (또는 복사)
-#   3. 각 AI 도구별 진입점 파일 복사 (CLAUDE.md, .github/copilot-instructions.md, .antigravityrules)
+#   1. 사용자에게 사용할 AI 도구(VS Code, Claude Code, Google Antigravity) 선택 요청
+#   2. .ai/rules  → ai-dev-rules/.ai/rules 심볼릭 링크 생성
+#   3. .ai/core.md → ai-dev-rules/.ai/core.md 심볼릭 링크 생성 (또는 복사)
+#   4. 선택한 AI 도구에 맞는 진입점 파일 복사
 
 param(
     [Parameter(Mandatory = $true)]
@@ -27,6 +28,25 @@ if (-not (Test-Path $ProjectPath)) {
 
 if (-not (Test-Path $GlobalRules)) {
     Write-Error "전역 규칙 폴더를 찾을 수 없습니다: $GlobalRules"
+    exit 1
+}
+
+# --- 0. AI 도구 선택 ---
+Write-Host "========================================"
+Write-Host "어떤 AI 개발 도구를 사용하시겠습니까?"
+Write-Host "1. VS Code (GitHub Copilot)"
+Write-Host "2. Claude Code"
+Write-Host "3. Google Antigravity"
+Write-Host "4. 모두 설치"
+Write-Host "========================================"
+$choice = Read-Host "번호를 선택하세요 (1-4)"
+
+$installCopilot = ($choice -eq '1' -or $choice -eq '4')
+$installClaude = ($choice -eq '2' -or $choice -eq '4')
+$installAntigravity = ($choice -eq '3' -or $choice -eq '4')
+
+if (-not ($installCopilot -or $installClaude -or $installAntigravity)) {
+    Write-Error "잘못된 선택입니다. 스크립트를 종료합니다."
     exit 1
 }
 
@@ -91,12 +111,21 @@ function Copy-EntryPoint {
 
 # --- 3. 각 도구별 진입점 복사 ---
 Write-Host "`n[진입점 파일 복사]"
-Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir "CLAUDE.md") -DestPath (Join-Path $ProjectPath "CLAUDE.md")
-Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir "copilot-instructions.md") -DestPath (Join-Path $ProjectPath ".github\copilot-instructions.md")
-Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir ".antigravityrules") -DestPath (Join-Path $ProjectPath ".antigravityrules")
+
+if ($installClaude) {
+    Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir "CLAUDE.md") -DestPath (Join-Path $ProjectPath "CLAUDE.md")
+}
+
+if ($installCopilot) {
+    Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir "copilot-instructions.md") -DestPath (Join-Path $ProjectPath ".github\copilot-instructions.md")
+}
+
+if ($installAntigravity) {
+    Copy-EntryPoint -SourceFile (Join-Path $EntrypointsDir "rules.md") -DestPath (Join-Path $ProjectPath ".agent\rules\rules.md")
+}
 
 # --- 완료 ---
 Write-Host "`n셋업 완료: $ProjectPath`n"
 Write-Host "다음 단계:"
-Write-Host "  1. 프로젝트 루트의 CLAUDE.md, .antigravityrules, .github/copilot-instructions.md 파일을 열어 프로젝트별 지침을 추가하세요."
+Write-Host "  1. 프로젝트에 생성된 진입점 파일(CLAUDE.md, .agent/rules/rules.md, .github/copilot-instructions.md 중 선택한 것)을 열어 프로젝트별 지침을 추가하세요."
 Write-Host "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조하게 됩니다."
