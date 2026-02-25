@@ -79,6 +79,9 @@ for rule in "${rules[@]}"; do
   download_file ".ai/rules/$rule" "$AI_DIR/rules/$rule"
 done
 
+# language rules
+download_file ".ai/rules/language/README.md" "$AI_DIR/rules/language/README.md"
+
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"
 
@@ -102,15 +105,15 @@ create_entry_point() {
   cat > "$local_path" << EOF
 # $tool_name Instructions
 
-> **중요**: 공통 AI 개발 규칙은 \`.ai/core.md\` 및 \`.ai/rules/\` 폴더의 내용을 반드시 먼저 읽고 숙지하세요.
+> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in \`.ai/core.md\` and all rules in \`.ai/rules/\`.
 
 ---
 ## Project Specific Instructions
 (Add any project-specific instructions for $tool_name here)
-- 프로젝트 개요:
-- 기술 스택:
-- 코딩 컨벤션:
-- 파일 구조:
+- Project Overview:
+- Tech Stack:
+- Coding Conventions:
+- File Structure:
 EOF
 
   echo "✔ 진입점 생성 완료 (core.md 참조): $local_path"

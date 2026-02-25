@@ -76,6 +76,9 @@ foreach ($rule in $rules) {
     Download-File -RemotePath ".ai/rules/$rule" -LocalPath (Join-Path $DestAiDir "rules\$rule")
 }
 
+# language rules
+Download-File -RemotePath ".ai/rules/language/README.md" -LocalPath (Join-Path $DestAiDir "rules\language\README.md")
+
 # skills
 Download-File -RemotePath ".ai/skills/README.md" -LocalPath (Join-Path $DestAiDir "skills\README.md")
 
@@ -99,13 +102,14 @@ function Create-EntryPoint {
         $templateContent = @"
 # $ToolName Instructions
 
-> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in `.ai/core.md`.
+> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in ``.ai/core.md`` and all rules in ``.ai/rules/``.
 
 ---
 ## Project Specific Instructions
 (Add any project-specific instructions for $ToolName here)
 - Project Overview:
 - Tech Stack:
+- Coding Conventions:
 - File Structure:
 "@
 
