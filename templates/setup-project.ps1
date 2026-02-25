@@ -99,15 +99,14 @@ function Create-EntryPoint {
         $templateContent = @"
 # $ToolName Instructions
 
-> **중요**: 공통 AI 개발 규칙은 `.ai/core.md` 및 `.ai/rules/` 폴더의 내용을 반드시 먼저 읽고 숙지하세요.
+> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in `.ai/core.md`.
 
 ---
 ## Project Specific Instructions
 (Add any project-specific instructions for $ToolName here)
-- 프로젝트 개요:
-- 기술 스택:
-- 코딩 컨벤션:
-- 파일 구조:
+- Project Overview:
+- Tech Stack:
+- File Structure:
 "@
 
         Set-Content -Path $LocalPath -Value $templateContent -Encoding UTF8
