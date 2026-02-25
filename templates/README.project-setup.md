@@ -19,17 +19,14 @@ git init
 
 ### 2. AI 도구 진입점 및 규칙 연결
 
-가장 쉬운 방법은 제공된 셋업 스크립트를 사용하는 것입니다:
+가장 쉬운 방법은 제공된 원격 셋업 스크립트를 사용하는 것입니다. 로컬에 레포지토리를 클론할 필요 없이 바로 실행할 수 있습니다:
 
 ```powershell
-# ai-dev-rules 저장소 클론 (아직 없는 경우)
-# git clone https://github.com/Hongcha-poodle/ai-dev-rules.git C:\path\to\ai-dev-rules
-
-# 셋업 스크립트 실행
-& "C:\path\to\ai-dev-rules\templates\setup-project.ps1" -ProjectPath $PWD
+# 원격 스크립트 실행
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 
-스크립트를 실행하면 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity)를 선택**하는 프롬프트가 나타나며, 선택한 도구에 맞는 설정 파일만 복사됩니다.
+스크립트를 실행하면 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity)를 선택**하는 프롬프트가 나타나며, 선택한 도구에 맞는 설정 파일과 핵심 규칙들이 GitHub에서 직접 다운로드되어 프로젝트에 설정됩니다.
 
 수동으로 설정하려면 다음을 수행하세요:
 1. 프로젝트 루트에 `.ai` 폴더 생성
@@ -77,7 +74,7 @@ git init
 
 ```
 my-new-project/
-├─ .ai/                         # 전역 AI 규칙 (심볼릭 링크)
+├─ .ai/                         # 전역 AI 규칙 (GitHub에서 다운로드됨)
 │  ├─ core.md
 │  └─ rules/
 ├─ CLAUDE.md                    # Claude Code 진입점
@@ -117,4 +114,4 @@ my-new-project/
 
 ### 규칙 업데이트
 
-전역 규칙은 `ai-dev-rules` 저장소에서 관리되며, 심볼릭 링크를 통해 모든 프로젝트에 즉시 반영됩니다.
+전역 규칙은 `ai-dev-rules` 저장소에서 관리됩니다. 프로젝트에 설치된 규칙을 최신 버전으로 업데이트하려면 셋업 스크립트를 다시 실행하세요.
