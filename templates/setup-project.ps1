@@ -16,15 +16,17 @@ Write-Host "어떤 AI 개발 도구를 사용하시겠습니까?"
 Write-Host "1. VS Code (GitHub Copilot)"
 Write-Host "2. Claude Code"
 Write-Host "3. Google Antigravity"
-Write-Host "4. 모두 설치"
+Write-Host "4. OpenAI Codex"
+Write-Host "5. 모두 설치"
 Write-Host "========================================"
-$choice = Read-Host "번호를 선택하세요 (1-4)"
+$choice = Read-Host "번호를 선택하세요 (1-5)"
 
-$installCopilot = ($choice -eq '1' -or $choice -eq '4')
-$installClaude = ($choice -eq '2' -or $choice -eq '4')
-$installAntigravity = ($choice -eq '3' -or $choice -eq '4')
+$installCopilot = ($choice -eq '1' -or $choice -eq '5')
+$installClaude = ($choice -eq '2' -or $choice -eq '5')
+$installAntigravity = ($choice -eq '3' -or $choice -eq '5')
+$installCodex = ($choice -eq '4' -or $choice -eq '5')
 
-if (-not ($installCopilot -or $installClaude -or $installAntigravity)) {
+if (-not ($installCopilot -or $installClaude -or $installAntigravity -or $installCodex)) {
     Write-Error "잘못된 선택입니다. 스크립트를 종료합니다."
     exit 1
 }
@@ -56,20 +58,25 @@ if (-not (Test-Path $DestAiDir)) {
 Write-Host "`n[핵심 규칙 다운로드]"
 Download-File -RemotePath ".ai/core.md" -LocalPath (Join-Path $DestAiDir "core.md")
 
-# 참고: GitHub API를 사용하지 않고 raw 파일만 다운로드하므로, 
-# rules 폴더 내의 파일 목록을 하드코딩하거나 별도의 목록 파일이 필요합니다.
-# 여기서는 주요 파일들을 명시적으로 다운로드합니다.
+# config
+Download-File -RemotePath ".ai/config/quality.yaml" -LocalPath (Join-Path $DestAiDir "config\quality.yaml")
+
+# rules
 $rules = @(
     "development/agent-authoring.md",
     "integration/mcp-integration.md",
-    "workflow/spec-workflow.md"
+    "workflow/spec-workflow.md",
+    "workflow/team-workflow.md"
 )
 
 foreach ($rule in $rules) {
     Download-File -RemotePath ".ai/rules/$rule" -LocalPath (Join-Path $DestAiDir "rules\$rule")
 }
 
-# --- 3. 각 도구별 진입점 생성 (core.md 내용 병합) ---
+# skills
+Download-File -RemotePath ".ai/skills/README.md" -LocalPath (Join-Path $DestAiDir "skills\README.md")
+
+# --- 3. 각 도구별 진입점 생성 (core.md 참조) ---
 Write-Host "`n[진입점 파일 생성]"
 
 function Create-EntryPoint {
@@ -80,10 +87,17 @@ function Create-EntryPoint {
         New-Item -ItemType Directory -Path $DestDir | Out-Null
     }
 
+    if (Test-Path $LocalPath) {
+        Write-Host "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $LocalPath"
+        return
+    }
+
     try {
-        $coreContent = Get-Content -Path (Join-Path $DestAiDir "core.md") -Raw
-        
         $templateContent = @"
+# $ToolName Instructions
+
+> **중요**: 공통 AI 개발 규칙은 `.ai/core.md` 및 `.ai/rules/` 폴더의 내용을 반드시 먼저 읽고 숙지하세요.
+
 ---
 ## Project Specific Instructions
 (Add any project-specific instructions for $ToolName here)
@@ -93,9 +107,8 @@ function Create-EntryPoint {
 - 파일 구조:
 "@
 
-        $finalContent = "$coreContent`n`n$templateContent"
-        Set-Content -Path $LocalPath -Value $finalContent -Encoding UTF8
-        Write-Host "✔ 진입점 생성 완료 (core.md 병합됨): $LocalPath"
+        Set-Content -Path $LocalPath -Value $templateContent -Encoding UTF8
+        Write-Host "✔ 진입점 생성 완료 (core.md 참조): $LocalPath"
     } catch {
         Write-Warning "진입점 생성 실패: $LocalPath"
     }
@@ -113,8 +126,12 @@ if ($installAntigravity) {
     Create-EntryPoint -ToolName "Google Antigravity" -LocalPath (Join-Path $ProjectPath ".agent\rules\rules.md")
 }
 
+if ($installCodex) {
+    Create-EntryPoint -ToolName "OpenAI Codex" -LocalPath (Join-Path $ProjectPath "AGENTS.md")
+}
+
 # --- 완료 ---
 Write-Host "`n셋업 완료: $ProjectPath`n"
 Write-Host "다음 단계:"
-Write-Host "  1. 프로젝트에 생성된 진입점 파일(CLAUDE.md, .agent/rules/rules.md, .github/copilot-instructions.md 중 선택한 것)을 열어 프로젝트별 지침을 추가하세요."
+Write-Host "  1. 프로젝트에 생성된 진입점 파일(CLAUDE.md, .agent/rules/rules.md, .github/copilot-instructions.md, AGENTS.md 중 선택한 것)을 열어 프로젝트별 지침을 추가하세요."
 Write-Host "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조하게 됩니다."

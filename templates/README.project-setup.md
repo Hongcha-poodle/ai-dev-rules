@@ -26,19 +26,20 @@ git init
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 
-스크립트를 실행하면 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity)를 선택**하는 프롬프트가 나타나며, 선택한 도구에 맞는 설정 파일과 핵심 규칙들이 GitHub에서 직접 다운로드되어 프로젝트에 설정됩니다.
+스크립트를 실행하면 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity, OpenAI Codex)를 선택**하는 프롬프트가 나타나며, 선택한 도구에 맞는 설정 파일과 핵심 규칙들이 GitHub에서 직접 다운로드되어 프로젝트에 설정됩니다.
 
 수동으로 설정하려면 다음을 수행하세요:
 1. 프로젝트 루트에 `.ai` 폴더 생성
 2. `ai-dev-rules/.ai/core.md` 및 `ai-dev-rules/.ai/rules`를 프로젝트의 `.ai/` 폴더 안에 복사
-3. 사용하는 도구에 맞는 진입점 파일을 프로젝트의 적절한 위치에 생성하고, `.ai/core.md`의 내용을 복사해 넣습니다.
+3. 사용하는 도구에 맞는 진입점 파일을 프로젝트의 적절한 위치에 생성하고, `.ai/core.md`를 참조하도록 지시문을 작성합니다.
    - Claude Code: `CLAUDE.md`
    - VS Code (GitHub Copilot): `.github/copilot-instructions.md`
    - Google Antigravity: `.agent/rules/rules.md`
+   - OpenAI Codex: `AGENTS.md`
 
 ### 3. 프로젝트별 설정 커스터마이징
 
-복사된 진입점 파일 하단을 열어 다음 섹션을 프로젝트에 맞게 수정:
+생성된 진입점 파일을 열어 다음 섹션을 프로젝트에 맞게 수정:
 
 - 프로젝트 개요
 - 기술 스택
@@ -83,6 +84,7 @@ my-new-project/
 │     └─ rules.md               # Google Antigravity 진입점
 ├─ .github/
 │  └─ copilot-instructions.md   # GitHub Copilot 진입점
+├─ AGENTS.md                    # OpenAI Codex 진입점
 ├─ src/                         # 소스 코드
 ├─ tests/                       # 테스트
 ├─ docs/                        # 문서

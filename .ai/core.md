@@ -37,6 +37,6 @@ Do not list full agent capabilities here. Use the following heuristic decision t
 - **Web Search Protocol**: Only include verified URLs with sources. Never generate or hallucinate URLs not strictly found in WebSearch results.
 
 ## 6. Progressive Disclosure & Advanced Architecture
-- **Token Optimization**: Follow the 3-level Progressive Disclosure system. Metadata is loaded initially; full Rule/Skill content is injected on-demand when triggers match.
+- **Token Optimization**: Follow the 3-level Progressive Disclosure system. Metadata is loaded initially; full Rule/Skill content is injected on-demand when triggers match. Available skills are located in `@.ai/skills/`.
 - **Error Recovery**: Delegate integration errors to `expert-devops` and logic errors to `expert-debug`. Do not attempt infinite loops of self-correction.
 - **Agent Teams (Experimental)**: If `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is active, utilize `TeamCreate` and `SendMessage` APIs for parallel phase execution. Reference `@.ai/rules/workflow/team-workflow.md`.

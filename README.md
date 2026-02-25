@@ -14,6 +14,7 @@ ai-dev-rules/
 │       ├── integration/        # MCP 통합 가이드
 │       ├── language/           # 언어별 규칙 (go.md, python.md 등)
 │       └── workflow/           # SPEC, 팀 워크플로우
+│   └── skills/                 # 도구별 스킬 및 확장 기능
 └── templates/
     ├── setup-project.ps1                   # 새 프로젝트 셋업 스크립트
     ├── project-rules.template.md           # 프로젝트별 규칙 템플릿
@@ -30,9 +31,9 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 ```
 
 스크립트가 자동으로:
-- 사용자에게 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity)를 선택**하도록 요청
+- 사용자에게 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity, OpenAI Codex)를 선택**하도록 요청
 - GitHub에서 최신 `.ai/core.md` 및 `.ai/rules/` 다운로드
-- 선택한 도구에 맞는 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`) 생성
+- 선택한 도구에 맞는 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`, `AGENTS.md`) 생성
 
 ## 전역 규칙 업데이트
 
@@ -40,5 +41,5 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 ## 프로젝트별 커스터마이징
 
-각 프로젝트에 복사된 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`) 하단에 프로젝트 특화 내용을 추가합니다.  
-전역 규칙과 충돌 시 프로젝트별 규칙이 우선합니다.
+각 프로젝트에 생성된 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`, `AGENTS.md`)에 프로젝트 특화 내용을 추가합니다.  
+진입점 파일은 공통 규칙인 `.ai/core.md`를 참조하도록 설정되어 있으며, 전역 규칙과 충돌 시 프로젝트별 규칙이 우선합니다.
