@@ -7,19 +7,15 @@ AI 개발 규칙 허브. 여러 프로젝트에서 공통으로 사용하는 전
 ```
 ai-dev-rules/
 ├── .ai/
-│   ├── core.md                 # 전역 AI 오케스트레이터 지침 (각 프로젝트에 심볼릭 링크)
+│   ├── core.md                 # 전역 AI 오케스트레이터 지침
 │   ├── config/quality.yaml     # LSP/테스트 품질 게이트 설정
-│   └── rules/                  # 전역 규칙 (프로젝트에 심볼릭 링크로 연결)
+│   └── rules/                  # 전역 규칙
 │       ├── development/        # 에이전트 작성 가이드
 │       ├── integration/        # MCP 통합 가이드
 │       ├── language/           # 언어별 규칙 (go.md, python.md 등)
 │       └── workflow/           # SPEC, 팀 워크플로우
 └── templates/
     ├── setup-project.ps1                   # 새 프로젝트 셋업 스크립트
-    ├── entrypoints/                        # 각 AI 도구별 진입점 템플릿
-    │   ├── CLAUDE.md                       # Claude Code 진입점
-    │   ├── copilot-instructions.md         # VS Code (GitHub Copilot) 진입점
-    │   └── rules.md                        # Google Antigravity 진입점
     ├── project-rules.template.md           # 프로젝트별 규칙 템플릿
     └── README.project-setup.md             # 수동 설정 가이드
 ```
@@ -29,10 +25,7 @@ ai-dev-rules/
 새 프로젝트 폴더에서 아래 명령어를 실행하면 GitHub에서 최신 규칙을 다운로드하여 자동으로 설정합니다.
 
 ```powershell
-# 새 프로젝트 디렉토리로 이동
-cd C:\path\to\my-project
-
-# 원격 스크립트 실행
+# 프로젝트의 폴더에서 원격 스크립트 실행
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 

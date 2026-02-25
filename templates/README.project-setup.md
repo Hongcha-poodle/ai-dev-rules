@@ -30,8 +30,8 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 수동으로 설정하려면 다음을 수행하세요:
 1. 프로젝트 루트에 `.ai` 폴더 생성
-2. `ai-dev-rules/.ai/core.md` 및 `ai-dev-rules/.ai/rules`를 프로젝트의 `.ai/` 폴더 안에 심볼릭 링크로 연결
-3. `ai-dev-rules/templates/entrypoints/`에 있는 진입점 파일들 중 사용하는 도구에 맞는 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `rules.md`)을 프로젝트의 적절한 위치에 복사
+2. `ai-dev-rules/.ai/core.md` 및 `ai-dev-rules/.ai/rules`를 프로젝트의 `.ai/` 폴더 안에 복사
+3. 사용하는 도구에 맞는 진입점 파일을 프로젝트의 적절한 위치에 생성하고, `.ai/core.md`의 내용을 복사해 넣습니다.
    - Claude Code: `CLAUDE.md`
    - VS Code (GitHub Copilot): `.github/copilot-instructions.md`
    - Google Antigravity: `.agent/rules/rules.md`

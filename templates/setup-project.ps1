@@ -69,19 +69,48 @@ foreach ($rule in $rules) {
     Download-File -RemotePath ".ai/rules/$rule" -LocalPath (Join-Path $DestAiDir "rules\$rule")
 }
 
-# --- 3. 각 도구별 진입점 다운로드 ---
-Write-Host "`n[진입점 파일 다운로드]"
+# --- 3. 각 도구별 진입점 생성 (core.md 내용 병합) ---
+Write-Host "`n[진입점 파일 생성]"
+
+function Create-EntryPoint {
+    param([string]$ToolName, [string]$LocalPath)
+    
+    $DestDir = Split-Path -Parent $LocalPath
+    if (-not (Test-Path $DestDir)) {
+        New-Item -ItemType Directory -Path $DestDir | Out-Null
+    }
+
+    try {
+        $coreContent = Get-Content -Path (Join-Path $DestAiDir "core.md") -Raw
+        
+        $templateContent = @"
+---
+## Project Specific Instructions
+(Add any project-specific instructions for $ToolName here)
+- 프로젝트 개요:
+- 기술 스택:
+- 코딩 컨벤션:
+- 파일 구조:
+"@
+
+        $finalContent = "$coreContent`n`n$templateContent"
+        Set-Content -Path $LocalPath -Value $finalContent -Encoding UTF8
+        Write-Host "✔ 진입점 생성 완료 (core.md 병합됨): $LocalPath"
+    } catch {
+        Write-Warning "진입점 생성 실패: $LocalPath"
+    }
+}
 
 if ($installClaude) {
-    Download-File -RemotePath "templates/entrypoints/CLAUDE.md" -LocalPath (Join-Path $ProjectPath "CLAUDE.md")
+    Create-EntryPoint -ToolName "Claude Code" -LocalPath (Join-Path $ProjectPath "CLAUDE.md")
 }
 
 if ($installCopilot) {
-    Download-File -RemotePath "templates/entrypoints/copilot-instructions.md" -LocalPath (Join-Path $ProjectPath ".github\copilot-instructions.md")
+    Create-EntryPoint -ToolName "GitHub Copilot" -LocalPath (Join-Path $ProjectPath ".github\copilot-instructions.md")
 }
 
 if ($installAntigravity) {
-    Download-File -RemotePath "templates/entrypoints/rules.md" -LocalPath (Join-Path $ProjectPath ".agent\rules\rules.md")
+    Create-EntryPoint -ToolName "Google Antigravity" -LocalPath (Join-Path $ProjectPath ".agent\rules\rules.md")
 }
 
 # --- 완료 ---
