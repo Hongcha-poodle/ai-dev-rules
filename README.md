@@ -28,8 +28,15 @@ ai-dev-rules/
 
 새 프로젝트 폴더에서 아래 명령어를 실행하면 GitHub에서 최신 규칙을 다운로드하여 자동으로 설정합니다.
 
+**macOS / Linux (bash/zsh)**
+
+```bash
+bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
+```
+
+**Windows (PowerShell)**
+
 ```powershell
-# 프로젝트의 폴더에서 원격 스크립트 실행
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 
