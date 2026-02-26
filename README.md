@@ -19,9 +19,8 @@ ai-dev-rules/
 │   │   └── workflow/           # SPEC, 팀 워크플로우
 │   └── skills/                 # 도구별 스킬 및 확장 기능
 └── templates/
-    ├── setup-project.ps1                   # 새 프로젝트 셋업 스크립트
-    ├── project-rules.template.md           # 프로젝트별 규칙 템플릿
-    └── README.project-setup.md             # 수동 설정 가이드
+    ├── setup-project.sh        # 셋업 스크립트 (macOS/Linux)
+    └── setup-project.ps1       # 셋업 스크립트 (Windows)
 ```
 
 ## 새 프로젝트에 적용하기

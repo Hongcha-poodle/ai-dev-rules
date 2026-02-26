@@ -12,23 +12,30 @@ The AI acts strictly as the Strategic Orchestrator. Direct implementation of com
 
 ## 2. Request Processing & Routing Pipeline
 1. **Analyze**: Assess complexity, scope, and extract technology keywords. Load relevant core skills on demand.
-2. **Route**: Map the request to standard workflow subcommands (`/ai plan`, `/ai run`, `/ai sync`).
-3. **Execute**: Invoke specialized subagents explicitly (e.g., `expert-backend`, `manager-ddd`).
+2. **Route**: Map the request to standard workflow subcommands:
+   - `/ai plan` — 요구사항 분석, 명세 작성, 구현 전략 수립. Reference `@.ai/rules/workflow/spec-workflow.md`.
+   - `/ai run` — 코드 구현 및 테스트 실행. §4 Quality Gates 통과 필수.
+   - `/ai sync` — 코드 리뷰, 문서 업데이트, 통합 검증.
+3. **Execute**: Invoke specialized subagents by role (see §3 for role definitions).
 4. **Report**: Consolidate subagent execution results and format the final response.
 
 ## 3. Agent Delegation Strategy
 Do not list full agent capabilities here. Use the following heuristic decision tree to route tasks:
-1. Read-only codebase exploration? → Delegate to an exploration agent or use available search tools
-2. External documentation/API research? → Use web search/fetch tools available in the environment
-3. Domain expertise needed? → Delegate to a domain-specific expert agent
-4. Workflow coordination needed? → Delegate to a workflow manager agent
-5. Complex multi-step tasks? → Delegate to a general-purpose strategy agent
+1. Read-only codebase exploration? → Delegate to an **Explore** (탐색) role agent
+2. External documentation/API research? → Delegate to a **Search** (검색) role agent or use web search/fetch tools
+3. Domain expertise needed? → Delegate to a **Domain Expert** (도메인 전문가) role agent
+4. Implementation/code changes needed? → Delegate to an **Execute** (실행) role agent
+5. Architecture/strategy planning? → Delegate to a **Plan** (계획) role agent
 
-*For the complete agent catalog and usage specifications, dynamically reference `@.ai/rules/development/agent-authoring.md`.*
+*For the complete agent role catalog, delegation decision tree, and authoring specifications, reference `@.ai/rules/development/agent-authoring.md`.*
 
 ## 4. Quality Gates & Safeguards
 - **LSP Quality Gates**: Zero errors, zero type errors, and zero lint errors are strictly required before finalizing the `run` phase. Configurations are managed in `@.ai/config/quality.yaml`.
+- **Architecture Rules**: All structural design decisions MUST follow `@.ai/rules/architecture/architecture-guide.md`. Layer separation, dependency direction, and modularity criteria are defined there.
+- **Security Rules**: All generated code MUST comply with `@.ai/rules/security/security-guide.md`. Injection prevention, secrets management, and access control are mandatory.
+- **Testing Strategy**: All test-related decisions (layers, coverage, naming) MUST follow `@.ai/rules/testing/testing-guide.md`. Coverage thresholds reference `@.ai/config/quality.yaml`.
 - **Language-Specific Rules**: Never apply general programming assumptions. All language, framework, and testing-specific guidelines (e.g., Go testing commands, Python formatting) MUST be loaded dynamically from `@.ai/rules/language/`.
+- **MCP Integration**: When working with MCP servers or extended thinking, reference `@.ai/rules/integration/mcp-integration.md`.
 - **Conflict Prevention**: Analyze overlapping file access patterns and build dependency graphs prior to executing parallel file writes.
 
 ## 5. User Interaction & External Interfaces
@@ -37,6 +44,10 @@ Do not list full agent capabilities here. Use the following heuristic decision t
 - **Web Search Protocol**: Only include verified URLs with sources. Never generate or hallucinate URLs not found in actual search results.
 
 ## 6. Progressive Disclosure & Advanced Architecture
-- **Token Optimization**: Follow the 3-level Progressive Disclosure system. Metadata is loaded initially; full Rule/Skill content is injected on-demand when triggers match. Available skills are located in `@.ai/skills/`.
-- **Error Recovery**: Delegate integration errors to a DevOps expert agent and logic errors to a debug expert agent. Do not attempt infinite loops of self-correction.
+- **Token Optimization**: Follow the 3-level Progressive Disclosure system:
+  - **Level 1 (Metadata)**: On session start, load only `core.md` and directory structure. No rule/skill content.
+  - **Level 2 (On-Demand Rules)**: When a task matches a domain trigger (e.g., security review → `security-guide.md`, architecture design → `architecture-guide.md`), load the relevant rule file.
+  - **Level 3 (Full Skill Injection)**: When a specialized workflow is invoked (e.g., `/ai plan`, team mode), load the full skill/workflow content from `@.ai/skills/` or `@.ai/rules/workflow/`.
+- **Error Recovery**: Delegate integration errors to an **Execute** role agent with DevOps context and logic errors to an **Explore** role agent for debugging. Do not attempt infinite loops of self-correction.
 - **Agent Teams**: When the environment supports parallel agent execution, utilize team-based parallel phase execution. Reference `@.ai/rules/workflow/team-workflow.md`.
+- **Spec Workflow**: For specification-driven development, reference `@.ai/rules/workflow/spec-workflow.md`.

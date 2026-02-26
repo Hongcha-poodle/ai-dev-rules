@@ -1,5 +1,5 @@
 # Quality Gates Configuration
-# LSP Quality Gates - referenced by CLAUDE.core.md §4
+# LSP Quality Gates - referenced by core.md §4
 
 gates:
   lsp:
