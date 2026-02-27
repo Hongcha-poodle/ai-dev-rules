@@ -13,19 +13,19 @@ The AI acts strictly as the Strategic Orchestrator. Direct implementation of com
 ## 2. Request Processing & Routing Pipeline
 1. **Analyze**: Assess complexity, scope, and extract technology keywords. Load relevant core skills on demand.
 2. **Route**: Map the request to standard workflow subcommands:
-   - `/ai plan` — 요구사항 분석, 명세 작성, 구현 전략 수립. Reference `@.ai/rules/workflow/spec-workflow.md`.
-   - `/ai run` — 코드 구현 및 테스트 실행. §4 Quality Gates 통과 필수.
-   - `/ai sync` — 코드 리뷰, 문서 업데이트, 통합 검증.
+   - `/ai plan` — Requirements analysis, specification writing, implementation strategy planning. Reference `@.ai/rules/workflow/spec-workflow.md`.
+   - `/ai run` — Code implementation and test execution. Passing §4 Quality Gates is mandatory.
+   - `/ai sync` — Code review, documentation updates, integration validation.
 3. **Execute**: Invoke specialized subagents by role (see §3 for role definitions).
 4. **Report**: Consolidate subagent execution results and format the final response.
 
 ## 3. Agent Delegation Strategy
 Do not list full agent capabilities here. Use the following heuristic decision tree to route tasks:
-1. Read-only codebase exploration? → Delegate to an **Explore** (탐색) role agent
-2. External documentation/API research? → Delegate to a **Search** (검색) role agent or use web search/fetch tools
-3. Domain expertise needed? → Delegate to a **Domain Expert** (도메인 전문가) role agent
-4. Implementation/code changes needed? → Delegate to an **Execute** (실행) role agent
-5. Architecture/strategy planning? → Delegate to a **Plan** (계획) role agent
+1. Read-only codebase exploration? → Delegate to an **Explore** role agent
+2. External documentation/API research? → Delegate to a **Search** role agent or use web search/fetch tools
+3. Domain expertise needed? → Delegate to a **Domain Expert** role agent
+4. Implementation/code changes needed? → Delegate to an **Execute** role agent
+5. Architecture/strategy planning? → Delegate to a **Plan** role agent
 
 *For the complete agent role catalog, delegation decision tree, and authoring specifications, reference `@.ai/rules/development/agent-authoring.md`.*
 
