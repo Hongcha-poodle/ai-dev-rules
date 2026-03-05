@@ -2,7 +2,7 @@
 
 ## 개요
 
-Model Context Protocol (MCP) 서버 및 UltraThink와의 통합 방법을 설명합니다.
+Model Context Protocol (MCP) 서버 및 Extended Thinking과의 통합 방법을 설명합니다.
 
 ## MCP 서버 설정
 

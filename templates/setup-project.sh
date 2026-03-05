@@ -81,6 +81,7 @@ done
 
 # language rules
 download_file ".ai/rules/language/README.md" "$AI_DIR/rules/language/README.md"
+download_file ".ai/rules/language/_template.md" "$AI_DIR/rules/language/_template.md"
 
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"

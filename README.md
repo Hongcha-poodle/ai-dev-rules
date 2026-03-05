@@ -13,7 +13,7 @@ ai-dev-rules/
 │   │   ├── architecture/       # 아키텍처 설계 원칙
 │   │   ├── development/        # 에이전트 작성 가이드
 │   │   ├── integration/        # MCP 통합 가이드
-│   │   ├── language/           # 언어별 규칙 (go.md, python.md 등)
+│   │   ├── language/           # 언어별 규칙 (템플릿 제공, 필요 시 추가)
 │   │   ├── security/           # 보안 가이드 (OWASP 기반)
 │   │   ├── testing/            # 테스트 전략 가이드
 │   │   └── workflow/           # SPEC, 팀 워크플로우

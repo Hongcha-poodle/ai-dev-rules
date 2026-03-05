@@ -7,10 +7,15 @@
 ## 팀 구성
 
 ### 역할 분담
-- **Architect**: 전체 설계 및 구조 결정
-- **Developer**: 실제 코드 구현
-- **Reviewer**: 코드 검토 및 품질 관리
-- **Documenter**: 문서화 및 가이드 작성
+
+팀 역할은 `agent-authoring.md`의 에이전트 역할 체계에 다음과 같이 매핑됩니다:
+
+| 팀 역할 | 에이전트 역할 | 책임 |
+|---|---|---|
+| **Architect** | Plan | 전체 설계 및 구조 결정 |
+| **Developer** | Execute | 실제 코드 구현 |
+| **Reviewer** | Explore | 코드 검토 및 품질 관리 |
+| **Documenter** | Search + Execute | 문서화 및 가이드 작성 |
 
 ## 병렬 실행 전략
 

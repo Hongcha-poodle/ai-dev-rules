@@ -8,10 +8,10 @@ core.md §4에서 참조됩니다.
 ```
 .ai/rules/language/
 ├── _template.md   # 새 언어 규칙 작성용 템플릿
-├── go.md          # Go 언어 규칙 (테스트 명령어, 포매팅 등)
-├── python.md      # Python 규칙
-├── typescript.md  # TypeScript/JavaScript 규칙
-└── ...
+├── go.md          # (예시) Go 언어 규칙
+├── python.md      # (예시) Python 규칙
+├── typescript.md  # (예시) TypeScript/JavaScript 규칙
+└── ...            # _template.md를 복사하여 필요한 언어 규칙 추가
 ```
 
 ## 새 언어 규칙 추가 방법
