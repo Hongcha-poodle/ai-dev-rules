@@ -2,25 +2,48 @@
 
 AI 개발 규칙 허브. 여러 프로젝트에서 공통으로 사용하는 전역 AI 지침을 관리합니다.
 
+## 핵심 규칙 체계
+
+`core.md`는 모든 AI 에이전트가 따르는 오케스트레이터 지침이며, 다음을 정의합니다:
+
+- **Hard Rules** — 한국어 응답, 병렬 실행, 접근 방식 선승인, 재현 우선 버그 수정, 루프 감지(동일 오류 3회 시 중단), 완료 전 자체 검증 등 15개 필수 규칙
+- **Request Pipeline** — Analyze → Route(Plan/Run/Sync/Harness) → Execute → Report
+- **Agent Delegation** — 복잡도별 직접 실행 / 서브 에이전트 위임 기준
+- **Quality Gates** — LSP 제로 에러, 아키텍처·보안·테스트·배포·운영·하네스 검증
+- **Context Loading** — 트리거 기반 온디맨드 규칙 파일 로딩
+
 ## 구조
 
 ```
 ai-dev-rules/
 ├── .ai/
-│   ├── core.md                 # 전역 AI 오케스트레이터 지침
-│   ├── config/quality.yaml     # LSP/테스트 품질 게이트 설정
-│   ├── rules/                  # 전역 규칙
-│   │   ├── architecture/       # 아키텍처 설계 원칙
-│   │   ├── development/        # 에이전트 작성 가이드
-│   │   ├── integration/        # MCP 통합 및 Hooks 가이드
-│   │   ├── language/           # 언어별 규칙 (템플릿 제공, 필요 시 추가)
-│   │   ├── security/           # 보안 가이드 (OWASP 기반)
-│   │   ├── testing/            # 테스트 전략 가이드
-│   │   └── workflow/           # SPEC, 팀, Harness 엔지니어링 워크플로우
-│   └── skills/                 # 도구별 스킬 및 확장 기능
+│   ├── core.md                          # 전역 AI 오케스트레이터 지침
+│   ├── config/
+│   │   └── quality.yaml                 # LSP/테스트 품질 게이트 설정
+│   ├── rules/
+│   │   ├── architecture/
+│   │   │   └── architecture-guide.md    # 아키텍처 설계 원칙
+│   │   ├── development/
+│   │   │   └── agent-authoring.md       # 에이전트/스킬 작성 가이드
+│   │   ├── integration/
+│   │   │   ├── hooks-guide.md           # 하네스 Hooks 자동화 가이드
+│   │   │   └── mcp-integration.md       # MCP 서버 통합 가이드
+│   │   ├── language/
+│   │   │   ├── README.md                # 언어별 규칙 안내
+│   │   │   └── _template.md             # 새 언어 규칙 작성 템플릿
+│   │   ├── security/
+│   │   │   └── security-guide.md        # 보안 가이드 (OWASP 기반)
+│   │   ├── testing/
+│   │   │   └── testing-guide.md         # 테스트 전략 가이드
+│   │   └── workflow/
+│   │       ├── harness-engineering.md   # 하네스 엔지니어링 운영 가이드
+│   │       ├── spec-workflow.md         # SPEC 워크플로우 (Plan-Run-Sync)
+│   │       └── team-workflow.md         # 팀 역할 매핑 및 협업 워크플로우
+│   └── skills/
+│       └── README.md                    # 커스텀 스킬 추가 방법 안내
 └── templates/
-    ├── setup-project.sh        # 셋업 스크립트 (macOS/Linux)
-    └── setup-project.ps1       # 셋업 스크립트 (Windows)
+    ├── setup-project.sh                 # 셋업 스크립트 (macOS/Linux)
+    └── setup-project.ps1                # 셋업 스크립트 (Windows)
 ```
 
 ## 새 프로젝트에 적용하기
@@ -39,24 +62,57 @@ bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 
-스크립트가 자동으로:
-- 사용자에게 **사용할 AI 도구(VS Code, Claude Code, Google Antigravity, OpenAI Codex)를 선택**하도록 요청
-- GitHub에서 최신 `.ai/core.md` 및 `.ai/rules/` 다운로드
-- `docs/` 기본 골격 생성
-- 선택한 도구에 맞는 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`, `AGENTS.md`) 생성
+### 셋업 스크립트 동작
+
+스크립트가 자동으로 수행하는 작업:
+
+1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 선택 또는 전체 설치
+2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `skills/README.md`
+3. **`docs/` 권장 구조 생성** — 아래 표준 디렉토리와 기본 파일을 생성합니다:
+   ```
+   docs/
+   ├── index.md               # 문서 인덱스 (시작 맵)
+   ├── architecture/           # 핵심 구조와 변경 이유
+   ├── plans/active/           # 진행 중인 계획
+   ├── plans/completed/        # 완료된 계획
+   ├── product/                # 제품 요구사항과 사용자 흐름
+   ├── references/             # 외부 기술 문서 요약/정리
+   ├── reliability/            # 로그, 메트릭, 추적, 운영 체크리스트
+   ├── security/               # 위험 모델, 보안 가드레일
+   └── generated/              # DB schema, API surface 등 생성 산출물
+   ```
+4. **진입점 파일 생성** — 선택한 도구에 맞는 파일을 생성합니다:
+
+   | AI 도구 | 진입점 파일 | 특징 |
+   |---|---|---|
+   | Claude Code | `CLAUDE.md` | Context Loading, Hooks, Permissions 등 하네스 전용 설정 포함 |
+   | GitHub Copilot | `.github/copilot-instructions.md` | 공통 템플릿 |
+   | Google Antigravity | `.agent/rules/rules.md` | 공통 템플릿 |
+   | OpenAI Codex | `AGENTS.md` | Read First / Load On Demand 맵 스타일 |
+
+> 이미 존재하는 진입점 파일은 덮어쓰지 않습니다.
 
 ## Harness 엔지니어링 관점의 권장 운영 방식
 
-- 진입점 파일(`AGENTS.md`, `CLAUDE.md`)은 짧은 map으로 유지하고, 상세 지식은 `docs/`와 `.ai/rules/`에 기록합니다.
-- 반복해서 실패하는 작업은 프롬프트를 늘리기보다 스크립트, 테스트, 관측 가능성, 문서 구조를 개선합니다.
-- UI/로그/메트릭/추적처럼 에이전트가 직접 읽고 검증할 수 있는 표면을 늘립니다.
-- 작은 PR과 빠른 검증을 기본으로 하고, 드리프트와 AI slop을 줄이기 위한 정리 루프를 둡니다.
+- **진입점은 짧은 map으로 유지** — `AGENTS.md`, `CLAUDE.md` 등은 라우팅 역할만 하고, 상세 지식은 `docs/`와 `.ai/rules/`에 기록합니다.
+- **하네스 우선 개선** — 반복 실패하는 작업은 프롬프트를 늘리기보다 스크립트, 테스트, 관측 가능성, 문서 구조를 개선합니다.
+- **에이전트 가독성 표면 확대** — UI/로그/메트릭/추적처럼 에이전트가 직접 읽고 검증할 수 있는 인터페이스를 늘립니다.
+- **작은 PR + 정리 루프** — 작은 PR과 빠른 검증을 기본으로 하고, 드리프트와 AI slop을 줄이기 위한 정리 루프를 둡니다.
+- **루프 감지** — 동일 파일 3회 이상 편집 또는 동일 테스트 3회 이상 실패 시 재시도 대신 접근 방식을 재평가합니다.
 
 ## 전역 규칙 업데이트
 
 프로젝트에 설치된 규칙을 최신 버전으로 업데이트하려면 셋업 스크립트를 다시 실행하세요.
 
+- 기존 `.ai/` 규칙 파일은 최신 버전으로 **덮어쓰기**됩니다.
+- 진입점 파일(`CLAUDE.md`, `AGENTS.md` 등)은 이미 존재하면 **건너뜁니다** — 프로젝트별 커스터마이징이 유지됩니다.
+- `docs/` 디렉토리의 기존 파일도 건너뜁니다.
+
 ## 프로젝트별 커스터마이징
 
-각 프로젝트에 생성된 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`, `.agent/rules/rules.md`, `AGENTS.md`)에 프로젝트 특화 내용을 추가합니다.  
-진입점 파일은 공통 규칙인 `.ai/core.md`를 참조하도록 설정되어 있으며, 전역 규칙과 충돌 시 프로젝트별 규칙이 우선합니다.
+각 프로젝트에 생성된 진입점 파일에 프로젝트 특화 내용을 추가합니다.
+
+- 진입점 파일의 `Project Specific Instructions` 섹션에 프로젝트 개요, 기술 스택, 핵심 문서, 검증 명령어를 기입합니다.
+- 진입점 파일은 공통 규칙인 `.ai/core.md`를 참조하도록 설정되어 있으며, **전역 규칙과 충돌 시 프로젝트별 규칙이 우선**합니다.
+- 언어별 규칙이 필요하면 `.ai/rules/language/_template.md`를 복사하여 `{lang}.md`로 작성합니다.
+- 커스텀 스킬이 필요하면 `.ai/skills/README.md`의 안내를 따라 스킬 파일을 추가합니다.
