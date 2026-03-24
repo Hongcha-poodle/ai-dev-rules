@@ -1,42 +1,88 @@
-# 팀 모드 워크플로우
+# Team Workflow
 
-## 개요
+Multi-agent collaboration using Claude Code harness: Agent tool, worktree isolation, background execution.
 
-여러 에이전트가 협력하여 작업하는 팀 모드의 워크플로우를 정의합니다.
+## Team Roles
 
-## 팀 구성
+| Role | Agent Role | subagent_type | Responsibility |
+|---|---|---|---|
+| Architect | Plan | `"Plan"` | Design and structure |
+| Developer | Execute | `"general-purpose"` | Code implementation |
+| Reviewer | Explore | `"Explore"` | Code review, quality |
+| Verifier | Verify | `"Explore"` or `"general-purpose"` | Regression, smoke, release checks |
+| Release / SRE | Release | `"general-purpose"` + DevOps context | Deployment, rollback, observability |
+| Harness / Enablement | Execute or Specialist | `"general-purpose"` + tooling/docs prompt | Docs, scripts, fixtures, observability, developer leverage |
+| Researcher | Search | `"general-purpose"` + web | External docs/API research |
+| AppSec / QA | Specialist | `"general-purpose"` + domain prompt | Security and test-depth review |
 
-### 역할 분담
+## Parallel Execution
 
-팀 역할은 `agent-authoring.md`의 에이전트 역할 체계에 다음과 같이 매핑됩니다:
+### Three mechanisms
 
-| 팀 역할 | 에이전트 역할 | 책임 |
-|---|---|---|
-| **Architect** | Plan | 전체 설계 및 구조 결정 |
-| **Developer** | Execute | 실제 코드 구현 |
-| **Reviewer** | Explore | 코드 검토 및 품질 관리 |
-| **Documenter** | Search + Execute | 문서화 및 가이드 작성 |
+**1. Simultaneous Agent calls**
+Launch multiple Agent tools in a single message:
+```
+Explore agent (code search) + Search agent (doc research) → one message, two calls
+Developer agent + Verify agent → implement while regression planning runs in parallel
+```
 
-## 병렬 실행 전략
+**2. Background execution** (`run_in_background: true`)
+Non-blocking tasks that notify on completion:
+```
+Long test suite → background, continue other work → auto-notified when done
+Release-readiness checklist → background while implementation finishes
+```
 
-### 독립적 작업
-- 서로 의존성이 없는 작업을 동시 실행
-- 파일 충돌 최소화
-- 명확한 작업 범위 분할
+**3. Worktree isolation** (`isolation: "worktree"`)
+Prevents file conflicts in parallel write operations:
+```
+Agent A: frontend refactor (worktree) | Agent B: backend refactor (worktree) → merge after
+```
 
-### 동기화 포인트
-- 중요한 의사결정 시점에서 합의
-- 정기적인 진행 상황 공유
-- 통합 및 테스트
+### Decision tree
 
-## 커뮤니케이션
+```
+Q1. File dependency between tasks?
+├─ Yes → Serialize
+└─ No
+   Q2. Both tasks write files?
+   ├─ Yes → Worktree isolation
+   └─ No → Standard parallel execution
+```
 
-### 작업 로그
-- 진행 상황 실시간 공유
-- 이슈 및 블로커 보고
-- 해결 방안 논의
+## Synchronization
+- Merge worktree changes at phase boundaries
+- Resolve conflicts before proceeding
+- Use `TodoWrite` for progress tracking across agents
 
-### 의사결정 프로세스
-- 합의 기반 결정
-- 명확한 문서화
-- 변경 이력 관리
+## Execution Example: New Feature (High Complexity)
+
+```
+Phase 1: Parallel research
+├─ [Explore agent] Existing code patterns (run_in_background)
+└─ [Search agent]  External API docs (run_in_background)
+
+Phase 2: Design
+└─ [Plan agent] Architecture based on Phase 1 results
+
+Phase 3: Parallel implementation
+├─ [Execute agent A] Frontend components (isolation: "worktree")
+└─ [Execute agent B] Backend API (isolation: "worktree")
+
+Phase 4: Verification
+├─ [Verify agent] Smoke/integration/regression checks
+└─ [AppSec / QA specialist] Risk review for auth, data, API, or migration changes
+
+Phase 5: Release readiness
+├─ [Release agent] Rollout, rollback, config, migration, observability review
+└─ [Harness / Enablement agent] Capture docs/scripts improvements for future runs
+```
+
+## Checklist
+- [ ] Task dependencies analyzed?
+- [ ] Worktree isolation applied for parallel writes?
+- [ ] Background execution used for non-blocking tasks?
+- [ ] `TodoWrite` tracking overall progress?
+- [ ] Results integrated at sync points?
+- [ ] Verification and release ownership assigned?
+- [ ] Harness ownership assigned when repeated friction appears?

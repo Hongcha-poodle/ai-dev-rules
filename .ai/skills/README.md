@@ -1,25 +1,24 @@
 # AI Skills
 
-이 폴더는 AI 도구별로 특화된 스킬(Skill)이나 확장 기능을 정의하는 곳입니다.
-core.md §6 Progressive Disclosure Level 3에서 참조됩니다.
+Custom skills and extensions. Referenced by `core.md` §6 Context Loading.
 
-## 스킬 추가 방법
+## Adding a skill
 
-1. 이 디렉토리에 `{스킬명}.md` 파일을 생성합니다.
-2. 아래 구조를 따릅니다:
+1. Create `{skill-name}.md` in this directory.
+2. Follow this structure:
 
+```markdown
+## Purpose
+- Problem this skill solves
+
+## Trigger
+- Auto-load condition (e.g. "on security review request")
+
+## Capabilities
+- Key features
+
+## Usage
+- Example scenarios
 ```
-## 목적
-- 이 스킬이 해결하는 문제
 
-## 트리거
-- 이 스킬이 자동 로드되는 조건 (예: "보안 검토 요청 시")
-
-## 기능
-- 제공하는 주요 기능
-
-## 사용법
-- 예제 시나리오
-```
-
-3. 스킬 작성 상세 가이드는 `@.ai/rules/development/agent-authoring.md`를 참조하세요.
+3. See `@.ai/rules/development/agent-authoring.md` for detailed authoring guide.

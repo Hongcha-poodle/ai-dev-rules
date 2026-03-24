@@ -66,8 +66,10 @@ $rules = @(
     "architecture/architecture-guide.md",
     "development/agent-authoring.md",
     "integration/mcp-integration.md",
+    "integration/hooks-guide.md",
     "security/security-guide.md",
     "testing/testing-guide.md",
+    "workflow/harness-engineering.md",
     "workflow/spec-workflow.md",
     "workflow/team-workflow.md"
 )
@@ -78,9 +80,63 @@ foreach ($rule in $rules) {
 
 # language rules
 Download-File -RemotePath ".ai/rules/language/README.md" -LocalPath (Join-Path $DestAiDir "rules\language\README.md")
+Download-File -RemotePath ".ai/rules/language/_template.md" -LocalPath (Join-Path $DestAiDir "rules\language\_template.md")
 
 # skills
 Download-File -RemotePath ".ai/skills/README.md" -LocalPath (Join-Path $DestAiDir "skills\README.md")
+
+# --- 2.5 권장 docs/ 구조 생성 ---
+Write-Host "`n[권장 docs 구조 생성]"
+$docsToCreate = @(
+    "docs\index.md",
+    "docs\architecture\README.md",
+    "docs\plans\active\.gitkeep",
+    "docs\plans\completed\.gitkeep",
+    "docs\product\README.md",
+    "docs\references\README.md",
+    "docs\reliability\README.md",
+    "docs\security\README.md",
+    "docs\generated\README.md"
+)
+
+foreach ($relativePath in $docsToCreate) {
+    $target = Join-Path $ProjectPath $relativePath
+    $dir = Split-Path -Parent $target
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir | Out-Null
+    }
+    if (-not (Test-Path $target)) {
+        switch ($relativePath) {
+            "docs\index.md" {
+                Set-Content -Path $target -Value "# Docs Index`n`n- architecture/`n- plans/active/`n- plans/completed/`n- product/`n- references/`n- reliability/`n- security/`n- generated/`n" -Encoding UTF8
+            }
+            "docs\architecture\README.md" {
+                Set-Content -Path $target -Value "# Architecture`n`n핵심 구조와 변경 이유를 기록합니다.`n" -Encoding UTF8
+            }
+            "docs\product\README.md" {
+                Set-Content -Path $target -Value "# Product`n`n제품 요구사항과 사용자 흐름을 기록합니다.`n" -Encoding UTF8
+            }
+            "docs\references\README.md" {
+                Set-Content -Path $target -Value "# References`n`n에이전트가 참조해야 하는 외부 기술 문서를 요약/정리합니다.`n" -Encoding UTF8
+            }
+            "docs\reliability\README.md" {
+                Set-Content -Path $target -Value "# Reliability`n`n로그, 메트릭, 추적, 운영 체크리스트를 기록합니다.`n" -Encoding UTF8
+            }
+            "docs\security\README.md" {
+                Set-Content -Path $target -Value "# Security`n`n위험 모델, 보안 가드레일, 검토 결과를 기록합니다.`n" -Encoding UTF8
+            }
+            "docs\generated\README.md" {
+                Set-Content -Path $target -Value "# Generated`n`nDB schema, API surface 등 생성 산출물을 보관합니다.`n" -Encoding UTF8
+            }
+            default {
+                New-Item -ItemType File -Path $target | Out-Null
+            }
+        }
+        Write-Host "✔ 생성 완료: $target"
+    } else {
+        Write-Host "⚠ 이미 존재하여 건너뜀: $target"
+    }
+}
 
 # --- 3. 각 도구별 진입점 생성 (core.md 참조) ---
 Write-Host "`n[진입점 파일 생성]"
@@ -102,15 +158,16 @@ function Create-EntryPoint {
         $templateContent = @"
 # $ToolName Instructions
 
-> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in ``.ai/core.md`` and all rules in ``.ai/rules/``.
+> **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in versioned docs under ``docs/`` and rules under ``.ai/``.
+> Before executing any task, you MUST read and strictly adhere to the global AI rules defined in ``.ai/core.md`` and relevant files in ``.ai/rules/``.
 
 ---
 ## Project Specific Instructions
-(Add any project-specific instructions for $ToolName here)
+(Add only high-signal routing guidance for $ToolName here)
 - Project Overview:
 - Tech Stack:
-- Coding Conventions:
-- File Structure:
+- Important Docs:
+- Verification Commands:
 "@
 
         Set-Content -Path $LocalPath -Value $templateContent -Encoding UTF8
@@ -121,7 +178,62 @@ function Create-EntryPoint {
 }
 
 if ($installClaude) {
-    Create-EntryPoint -ToolName "Claude Code" -LocalPath (Join-Path $ProjectPath "CLAUDE.md")
+    $claudePath = Join-Path $ProjectPath "CLAUDE.md"
+    if (Test-Path $claudePath) {
+        Write-Host "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $claudePath"
+    } else {
+        $claudeContent = @"
+# Claude Code Instructions
+
+> **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in ``docs/`` and ``.ai/``.
+> Before executing any task, you MUST read and strictly adhere to the global AI rules defined in ``.ai/core.md`` and relevant files in ``.ai/rules/``.
+
+## Harness Configuration
+
+### Context Loading
+This file is loaded automatically at session start. Additional rules are loaded on demand:
+- Architecture decisions → @.ai/rules/architecture/architecture-guide.md
+- Security review → @.ai/rules/security/security-guide.md
+- Test writing → @.ai/rules/testing/testing-guide.md
+- Harness engineering / repo operating model → @.ai/rules/workflow/harness-engineering.md
+- MCP integration → @.ai/rules/integration/mcp-integration.md
+- Hooks setup → @.ai/rules/integration/hooks-guide.md
+- Language rules → @.ai/rules/language/{lang}.md
+
+### Repository System of Record
+- `docs/index.md` is the starting map for durable project knowledge
+- Keep this file concise; move detailed architecture/product/reliability knowledge into `docs/`
+- Prefer repo scripts and docs over repeated prompt explanations
+
+### Recommended Hooks (.claude/settings.json)
+See ``.ai/rules/integration/hooks-guide.md`` for hook configuration examples.
+Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
+
+### Permissions
+Configure in ``.claude/settings.json``:
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint*)",
+      "Bash(npm test*)",
+      "Bash(npx tsc*)"
+    ]
+  }
+}
+```
+
+---
+## Project Specific Instructions
+(Add only high-signal routing guidance for Claude Code here)
+- Project Overview:
+- Tech Stack:
+- Important Docs:
+- Verification Commands:
+"@
+        Set-Content -Path $claudePath -Value $claudeContent -Encoding UTF8
+        Write-Host "✔ 진입점 생성 완료 (harness-specific, core.md 참조): $claudePath"
+    }
 }
 
 if ($installCopilot) {
@@ -133,7 +245,35 @@ if ($installAntigravity) {
 }
 
 if ($installCodex) {
-    Create-EntryPoint -ToolName "OpenAI Codex" -LocalPath (Join-Path $ProjectPath "AGENTS.md")
+    $agentsPath = Join-Path $ProjectPath "AGENTS.md"
+    if (Test-Path $agentsPath) {
+        Write-Host "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $agentsPath"
+    } else {
+        $agentsContent = @"
+# AGENTS.md
+
+This file is a short map for agents. Keep it concise.
+
+## Read First
+- `.ai/core.md`
+- `docs/index.md`
+
+## Load On Demand
+- Architecture → `.ai/rules/architecture/architecture-guide.md`
+- Security → `.ai/rules/security/security-guide.md`
+- Testing → `.ai/rules/testing/testing-guide.md`
+- Harness engineering → `.ai/rules/workflow/harness-engineering.md`
+- Team workflow → `.ai/rules/workflow/team-workflow.md`
+
+## Project Map
+- Product overview:
+- Tech stack:
+- Important docs:
+- Key commands:
+"@
+        Set-Content -Path $agentsPath -Value $agentsContent -Encoding UTF8
+        Write-Host "✔ 진입점 생성 완료 (agent-map style): $agentsPath"
+    }
 }
 
 # --- 완료 ---

@@ -10,9 +10,58 @@ gates:
   test:
     coverage_min: 80   # Minimum test coverage percentage
     fail_on_skip: false
+    smoke_required_for_impacted_paths: true
+    contract_required_for_api_changes: true
+    e2e_required_for_critical_flows: true
+
+  delivery:
+    deploy_readiness_required: true
+    migration_safety_required: true
+    rollback_plan_required_for_risky_changes: true
+
+  operations:
+    observability_notes_required_for_user_facing_changes: true
+    config_and_secret_impact_review: true
+
+  harness:
+    docs_system_of_record_required_for_new_domains: true
+    short_entrypoints_map_to_deep_docs: true
+    agent_readable_verification_required: true
+    autonomy_ladder_required_for_long_runs: true
+    entropy_cleanup_loop_required: true
 
   review:
     require_approval: true
+    require_edge_case_report: true
+    require_operational_notes: true
 
 # Language-specific overrides
 overrides: {}
+
+# Harness Hooks Intent
+# These values describe DESIRED automation behavior.
+# They do NOT auto-configure hooks — you must set up actual hooks
+# in .claude/settings.json using the correct JSON structure.
+# See .ai/rules/integration/hooks-guide.md for setup instructions.
+#
+# Hook event names (actual Claude Code spec):
+#   PreToolUse   — before tool execution (exit 2 to block)
+#   PostToolUse  — after tool execution
+#   Stop         — when agent finishes responding
+hooks_intent:
+  # PostToolUse: auto-run after Edit/Write tool calls
+  post_edit:
+    lint: true
+    typecheck: true
+    impacted_tests: true
+
+  # Stop: run when agent completes a response
+  on_stop:
+    coverage_report: false
+    quality_summary: true
+    delivery_summary: true
+    harness_summary: true
+
+  # PreToolUse: guard dangerous operations (exit 2 to block)
+  pre_bash:
+    block_destructive: true

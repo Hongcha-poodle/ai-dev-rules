@@ -1,90 +1,84 @@
-# 에이전트 및 스킬 작성 가이드
+# Agent & Skill Authoring Guide
 
-## 개요
+## Agent Roles
 
-새로운 AI 에이전트나 스킬을 작성할 때 따라야 할 가이드라인입니다.
+| Role | Purpose | Access | subagent_type |
+|---|---|---|---|
+| Explore | Read-only codebase search | Read | `"Explore"` |
+| Plan | Architecture, implementation strategy | Read | `"Plan"` |
+| Execute | Code changes, multi-file edits, commands | Read+Write | `"general-purpose"` |
+| Verify | Regression checks, smoke tests, release validation | Read or Read+Exec | `"Explore"` or `"general-purpose"` |
+| Release | Deployment readiness, rollback, observability | Read+Write/Exec | `"general-purpose"` + DevOps context |
+| Search | External docs/API research | External | `"general-purpose"` + web tools |
+| Specialist | Domain-specific expertise | Per-domain | `"general-purpose"` + domain prompt |
 
-## 에이전트 역할 분류
+### Delegation Decision Tree
+1. Read-only exploration needed? → Explore
+2. External research needed? → Search
+3. Domain expertise needed? → Specialist
+4. Architecture/strategy design? → Plan
+5. Post-change verification or regression review? → Verify
+6. Deployment/readiness/ops review? → Release
+7. Multi-file code changes? → Execute
 
-복잡한 작업을 위임할 때 사용하는 역할 분류 (도구별 구현 방식은 다를 수 있음):
+### Parallel Execution
+- No dependency between tasks → delegate simultaneously
+- Example: Explore (code search) + Search (docs) in parallel
+- Example: Execute (implementation) + Verify (regression planning) in parallel
+- Write conflicts → serialize or use `isolation: "worktree"`
 
-| 역할 | 용도 | 접근 범위 |
-|---|---|---|
-| **탐색(Explore)** | 코드베이스 읽기 전용 탐색, 파일/키워드 검색 | 읽기 전용 |
-| **계획(Plan)** | 구현 전략 수립, 아키텍처 설계 | 읽기 전용 |
-| **실행(Execute)** | 코드 작성, 멀티파일 변경, 명령 실행 | 읽기 + 쓰기 |
-| **검색(Search)** | 외부 문서/API 조사, 웹 검색 | 외부 접근 |
-| **도메인 전문가** | 특정 기술 스택 전문 작업 | 영역별 |
+## Agent Design Principles
 
-### 위임 결정 트리
-1. 코드베이스 읽기만 필요한가? → 탐색 역할
-2. 외부 문서/API 조사가 필요한가? → 검색 역할
-3. 특정 도메인 전문성이 필요한가? → 도메인 전문 역할
-4. 아키텍처/전략 설계가 필요한가? → 계획 역할
-5. 복잡한 멀티파일 변경이 필요한가? → 실행 역할
+### Single Responsibility
+- One clear purpose per agent
+- Well-defined role and scope
+- Avoid feature overload
 
-### 병렬 실행 원칙
-- 의존성이 없는 작업은 동시에 위임
-- 예: 코드 탐색 + 문서 검색을 동시에 진행
-- 쓰기 작업 간에는 파일 충돌 방지를 위해 순서 조율
+### Clear Interface
+- Define inputs and outputs explicitly
+- Specify error handling behavior
+- Document the API
 
-## 에이전트 설계 원칙
+### Reusability
+- Generic design with configurable parameters
+- Modular structure
 
-### 1. 단일 책임 원칙
-- 각 에이전트는 명확한 하나의 목적을 가짐
-- 역할과 책임을 분명히 정의
-- 과도한 기능 통합 지양
+## Skill Structure
 
-### 2. 명확한 인터페이스
-- 입력과 출력을 명확히 정의
-- 예외 상황 처리 방법 명시
-- API 문서화
-
-### 3. 재사용 가능성
-- 범용적인 설계
-- 설정 가능한 파라미터
-- 모듈화된 구조
-
-## 스킬 작성 가이드
-
-### 구조
 ```markdown
-# 스킬 이름
+# Skill Name
 
-## 목적
-- 이 스킬이 해결하는 문제
+## Purpose
+- Problem this skill solves
 
-## 기능
-- 제공하는 주요 기능 나열
+## Trigger
+- When to auto-load (e.g. "on security review request")
 
-## 사용법
-- 예제 코드 또는 시나리오
+## Capabilities
+- Key features
 
-## 제약사항
-- 알려진 제한사항
+## Usage
+- Example scenarios
+
+## Constraints
+- Known limitations
 ```
 
-### 베스트 프랙티스
-- 명확한 명명 규칙 사용
-- 충분한 에러 처리
-- 테스트 케이스 포함
-- 버전 관리
+## Testing
 
-## 테스트 및 검증
+### Unit
+- Test each capability independently
+- Cover edge cases
 
-### 단위 테스트
-- 각 기능별 테스트 케이스 작성
-- 엣지 케이스 고려
+### Integration
+- Verify inter-agent interaction
+- Test real usage scenarios
+- Verify handoff quality between Execute → Verify → Release
+- Verify whether the repo needs a Harness / Enablement agent to improve docs, scripts, or observability
 
-### 통합 테스트
-- 다른 에이전트와의 상호작용 검증
-- 실제 사용 시나리오 테스트
-
-## 문서화
-
-### 필수 항목
-- 목적 및 개요
-- 사용 방법 및 예제
-- API 레퍼런스
-- 버전 히스토리
-- 알려진 이슈
+## Documentation Requirements
+- Purpose and overview
+- Usage examples
+- API reference
+- Version history
+- Known issues

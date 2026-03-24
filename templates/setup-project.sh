@@ -69,8 +69,10 @@ rules=(
   "architecture/architecture-guide.md"
   "development/agent-authoring.md"
   "integration/mcp-integration.md"
+  "integration/hooks-guide.md"
   "security/security-guide.md"
   "testing/testing-guide.md"
+  "workflow/harness-engineering.md"
   "workflow/spec-workflow.md"
   "workflow/team-workflow.md"
 )
@@ -85,6 +87,41 @@ download_file ".ai/rules/language/_template.md" "$AI_DIR/rules/language/_templat
 
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"
+
+# --- 2.5 권장 docs/ 구조 생성 ---
+echo ""
+echo "[권장 docs 구조 생성]"
+mkdir -p \
+  "$PROJECT_PATH/docs/architecture" \
+  "$PROJECT_PATH/docs/plans/active" \
+  "$PROJECT_PATH/docs/plans/completed" \
+  "$PROJECT_PATH/docs/product" \
+  "$PROJECT_PATH/docs/references" \
+  "$PROJECT_PATH/docs/reliability" \
+  "$PROJECT_PATH/docs/security" \
+  "$PROJECT_PATH/docs/generated"
+
+[ -f "$PROJECT_PATH/docs/index.md" ] || cat > "$PROJECT_PATH/docs/index.md" << 'DOCSEOF'
+# Docs Index
+
+- architecture/
+- plans/active/
+- plans/completed/
+- product/
+- references/
+- reliability/
+- security/
+- generated/
+DOCSEOF
+
+[ -f "$PROJECT_PATH/docs/architecture/README.md" ] || printf '# Architecture\n\n핵심 구조와 변경 이유를 기록합니다.\n' > "$PROJECT_PATH/docs/architecture/README.md"
+[ -f "$PROJECT_PATH/docs/product/README.md" ] || printf '# Product\n\n제품 요구사항과 사용자 흐름을 기록합니다.\n' > "$PROJECT_PATH/docs/product/README.md"
+[ -f "$PROJECT_PATH/docs/references/README.md" ] || printf '# References\n\n에이전트가 참조해야 하는 외부 기술 문서를 요약/정리합니다.\n' > "$PROJECT_PATH/docs/references/README.md"
+[ -f "$PROJECT_PATH/docs/reliability/README.md" ] || printf '# Reliability\n\n로그, 메트릭, 추적, 운영 체크리스트를 기록합니다.\n' > "$PROJECT_PATH/docs/reliability/README.md"
+[ -f "$PROJECT_PATH/docs/security/README.md" ] || printf '# Security\n\n위험 모델, 보안 가드레일, 검토 결과를 기록합니다.\n' > "$PROJECT_PATH/docs/security/README.md"
+[ -f "$PROJECT_PATH/docs/generated/README.md" ] || printf '# Generated\n\nDB schema, API surface 등 생성 산출물을 보관합니다.\n' > "$PROJECT_PATH/docs/generated/README.md"
+[ -f "$PROJECT_PATH/docs/plans/active/.gitkeep" ] || : > "$PROJECT_PATH/docs/plans/active/.gitkeep"
+[ -f "$PROJECT_PATH/docs/plans/completed/.gitkeep" ] || : > "$PROJECT_PATH/docs/plans/completed/.gitkeep"
 
 # --- 3. 각 도구별 진입점 생성 (core.md 참조) ---
 echo ""
@@ -106,24 +143,114 @@ create_entry_point() {
   cat > "$local_path" << EOF
 # $tool_name Instructions
 
-> **CRITICAL**: Before executing any task, you MUST read and strictly adhere to the global AI rules defined in \`.ai/core.md\` and all rules in \`.ai/rules/\`.
+> **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in versioned docs under \`docs/\` and rules under \`.ai/\`.
+> Before executing any task, you MUST read and strictly adhere to the global AI rules defined in \`.ai/core.md\` and relevant files in \`.ai/rules/\`.
 
 ---
 ## Project Specific Instructions
-(Add any project-specific instructions for $tool_name here)
+(Add only high-signal routing guidance for $tool_name here)
 - Project Overview:
 - Tech Stack:
-- Coding Conventions:
-- File Structure:
+- Important Docs:
+- Verification Commands:
 EOF
 
   echo "✔ 진입점 생성 완료 (core.md 참조): $local_path"
 }
 
-[ "${install_claude:-false}" = true ] && create_entry_point "Claude Code" "$PROJECT_PATH/CLAUDE.md"
+create_claude_entry_point() {
+  local local_path="$1"
+
+  if [ -f "$local_path" ]; then
+    echo "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $local_path"
+    return
+  fi
+
+  cat > "$local_path" << 'CLAUDEEOF'
+# Claude Code Instructions
+
+> **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in `docs/` and `.ai/`.
+> Before executing any task, you MUST read and strictly adhere to the global AI rules defined in `.ai/core.md` and relevant files in `.ai/rules/`.
+
+## Harness Configuration
+
+### Context Loading
+This file is loaded automatically at session start. Additional rules are loaded on demand:
+- Architecture decisions → @.ai/rules/architecture/architecture-guide.md
+- Security review → @.ai/rules/security/security-guide.md
+- Test writing → @.ai/rules/testing/testing-guide.md
+- Harness engineering / repo operating model → @.ai/rules/workflow/harness-engineering.md
+- MCP integration → @.ai/rules/integration/mcp-integration.md
+- Hooks setup → @.ai/rules/integration/hooks-guide.md
+- Language rules → @.ai/rules/language/{lang}.md
+
+### Repository System of Record
+- `docs/index.md` is the starting map for durable project knowledge
+- Keep this file concise; move detailed architecture/product/reliability knowledge into `docs/`
+- Prefer repo scripts and docs over repeated prompt explanations
+
+### Recommended Hooks (.claude/settings.json)
+See `.ai/rules/integration/hooks-guide.md` for hook configuration examples.
+Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
+
+### Permissions
+Configure in `.claude/settings.json`:
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint*)",
+      "Bash(npm test*)",
+      "Bash(npx tsc*)"
+    ]
+  }
+}
+```
+
+---
+## Project Specific Instructions
+(Add only high-signal routing guidance for Claude Code here)
+- Project Overview:
+- Tech Stack:
+- Important Docs:
+- Verification Commands:
+CLAUDEEOF
+
+  echo "✔ 진입점 생성 완료 (harness-specific, core.md 참조): $local_path"
+}
+
+[ "${install_claude:-false}" = true ] && create_claude_entry_point "$PROJECT_PATH/CLAUDE.md"
 [ "${install_copilot:-false}" = true ] && create_entry_point "GitHub Copilot" "$PROJECT_PATH/.github/copilot-instructions.md"
 [ "${install_antigravity:-false}" = true ] && create_entry_point "Google Antigravity" "$PROJECT_PATH/.agent/rules/rules.md"
-[ "${install_codex:-false}" = true ] && create_entry_point "OpenAI Codex" "$PROJECT_PATH/AGENTS.md"
+if [ "${install_codex:-false}" = true ]; then
+  if [ -f "$PROJECT_PATH/AGENTS.md" ]; then
+    echo "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $PROJECT_PATH/AGENTS.md"
+  else
+    cat > "$PROJECT_PATH/AGENTS.md" << 'AGENTSEOF'
+# AGENTS.md
+
+This file is a short map for agents. Keep it concise.
+
+## Read First
+- `.ai/core.md`
+- `docs/index.md`
+
+## Load On Demand
+- Architecture → `.ai/rules/architecture/architecture-guide.md`
+- Security → `.ai/rules/security/security-guide.md`
+- Testing → `.ai/rules/testing/testing-guide.md`
+- Harness engineering → `.ai/rules/workflow/harness-engineering.md`
+- Team workflow → `.ai/rules/workflow/team-workflow.md`
+
+## Project Map
+- Product overview:
+- Tech stack:
+- Important docs:
+- Key commands:
+AGENTSEOF
+    echo "✔ 진입점 생성 완료 (agent-map style): $PROJECT_PATH/AGENTS.md"
+  fi
+fi
 
 # --- 완료 ---
 echo ""

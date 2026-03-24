@@ -1,71 +1,107 @@
-# 아키텍처 가이드
+# Architecture Guide
 
-## 개요
+## Hard Rules
+- [HARD] **Approach-First**: List target files and approach before non-trivial code. Get user approval.
+- Read existing patterns first, then write. Maintain consistency.
+- Minimize complexity for current requirements. No speculative abstractions.
 
-AI가 코드 구조를 설계하거나 기존 코드를 수정할 때 따라야 할 아키텍처 원칙을 정의합니다.
+## Layer Separation & Dependency Direction
 
-## 핵심 원칙
-
-- **[HARD] Approach-First**: 비자명한 코드를 작성하기 전에 수정할 파일 목록과 접근 방식을 먼저 설명하고 승인을 받는다.
-- 기존 아키텍처 패턴을 파악하고 일관성을 유지한다. 먼저 읽고, 그 다음 작성한다.
-- 과도한 추상화를 지양한다. 현재 요구사항에 맞는 최소한의 복잡도를 유지한다.
-
-## 레이어 분리 원칙
-
-### 의존성 방향
 ```
-UI / Controller
-      ↓
-  Use Case / Service
-      ↓
-  Domain / Entity
-      ↓
-  Infrastructure (DB, API, File)
+UI / Controller → Service / Use Case → Domain / Entity → Infrastructure (DB, API, File)
 ```
-- 안쪽 레이어는 바깥 레이어에 의존하지 않는다
-- Domain 레이어는 프레임워크나 DB에 의존하지 않는다
 
-### 레이어별 책임
-| 레이어 | 책임 | 포함하지 않아야 할 것 |
+Inner layers MUST NOT depend on outer layers. Domain layer has zero framework/DB dependencies.
+
+### Dependency Layering (Harness Engineering)
+
+Enforce a strict unidirectional dependency flow. Each layer may only import from layers to its right:
+
+```
+Types → Config → Repository → Service → Runtime → UI
+```
+
+- **Types**: Shared type definitions, interfaces, DTOs. Zero runtime dependencies.
+- **Config**: Environment config, feature flags. Depends only on Types.
+- **Repository**: Data access, external API clients. Depends on Types + Config.
+- **Service**: Business logic orchestration. Depends on Types + Config + Repository.
+- **Runtime**: Server bootstrap, middleware, DI wiring. Depends on all above.
+- **UI**: Controllers, views, API handlers. Depends on all above.
+
+**Violations to detect**:
+- UI importing from Repository directly (skipping Service)
+- Service importing from UI or Runtime
+- Types importing from anything
+- Circular dependencies at any level
+
+### Mechanical Enforcement
+
+Architecture rules should be enforced mechanically, not just by convention:
+
+| Method | Tool examples | When to use |
 |---|---|---|
-| Controller/Handler | 요청 파싱, 응답 포맷 | 비즈니스 로직 |
-| Service/Use Case | 비즈니스 흐름 조율 | DB 쿼리 직접 작성 |
-| Domain/Entity | 핵심 비즈니스 규칙 | 프레임워크 의존성 |
-| Repository | 데이터 접근 추상화 | 비즈니스 판단 |
+| **Structural tests** | ArchUnit, dependency-cruiser, deptry | CI pipeline — fail build on violation |
+| **Deterministic linters** | eslint-plugin-import, go vet, custom lint rules | `PostToolUse` hook — immediate feedback |
+| **LLM-based auditor** | Explore agent with architecture prompt | Sync phase — review for subtle violations |
 
-## 모듈화 기준
+Example dependency-cruiser rule (JS/TS):
+```json
+{
+  "forbidden": [
+    {
+      "name": "no-ui-to-repo",
+      "from": { "path": "^src/ui/" },
+      "to": { "path": "^src/repository/" }
+    },
+    {
+      "name": "no-service-to-ui",
+      "from": { "path": "^src/service/" },
+      "to": { "path": "^src/ui/" }
+    }
+  ]
+}
+```
 
-### 분리 기준
-- 변경 이유가 다르면 분리한다 (Single Responsibility)
-- 함께 변경되는 것은 같이 둔다 (Cohesion)
-- 재사용 단위로 묶는다
+| Layer | Responsibility | Must NOT contain |
+|---|---|---|
+| Controller/Handler | Request parsing, response formatting | Business logic |
+| Service/Use Case | Business flow orchestration | Direct DB queries |
+| Domain/Entity | Core business rules | Framework deps |
+| Repository | Data access abstraction | Business decisions |
 
-### 파일/함수 크기 가이드
-- 함수: 단일 책임, 화면 한 페이지 이내 권장
-- 파일: 200~400줄 초과 시 분리 검토
-- 클래스/모듈: 공개 인터페이스가 7개 이상이면 분리 검토
+## Modularity
 
-## 설계 결정 가이드
+### Split criteria
+- Different change reasons → separate (SRP)
+- Co-changing code → keep together (cohesion)
+- Group by reuse boundary
 
-### 새 기능 추가 시
-1. 기존 코드베이스의 패턴을 먼저 파악한다
-2. 기존 패턴에 맞게 설계한다 (일관성 우선)
-3. 기존 패턴에 문제가 있다면 리팩토링을 별도 작업으로 제안한다
+### Size guidelines
+- Function: single responsibility, fits one screen
+- File: review at 200-400 lines, split if exceeded
+- Class/module: review at 7+ public interfaces
 
-### 리팩토링 시
-- 기능 변경과 구조 변경을 동시에 하지 않는다
-- 리팩토링 전 테스트가 충분한지 확인한다
-- 작은 단계로 나누어 진행한다
+## Design Decisions
 
-### 의존성 관리
-- 외부 라이브러리는 인터페이스로 감싸 교체 가능하게 설계
-- 순환 의존성(circular dependency)은 허용하지 않는다
-- 의존성 주입(DI)을 통해 테스트 가능성 확보
+### Adding features
+1. Read existing patterns first
+2. Follow existing patterns (consistency over novelty)
+3. If patterns are flawed, propose refactoring as a separate task
 
-## 체크리스트
+### Refactoring
+- Never mix feature changes with structural changes
+- Verify sufficient test coverage before refactoring
+- Proceed in small incremental steps
 
-- [ ] 기존 아키텍처 패턴을 파악하고 따르고 있는가?
-- [ ] 레이어 간 의존성 방향이 올바른가?
-- [ ] 비즈니스 로직이 Controller/Infrastructure에 누출되지 않는가?
-- [ ] 순환 의존성이 없는가?
-- [ ] 현재 요구사항에 필요한 최소한의 복잡도인가?
+### Dependencies
+- Wrap external libraries behind interfaces for replaceability
+- Zero circular dependencies
+- Use DI for testability
+
+## Checklist
+- [ ] Existing architecture patterns identified and followed?
+- [ ] Layer dependency direction correct (Types→Config→Repo→Service→Runtime→UI)?
+- [ ] Business logic not leaking into Controller/Infrastructure?
+- [ ] No circular dependencies?
+- [ ] Structural tests or linter rules enforce dependency direction?
+- [ ] Minimum complexity for current requirements?

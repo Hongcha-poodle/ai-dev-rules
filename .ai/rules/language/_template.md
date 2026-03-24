@@ -1,38 +1,32 @@
-````markdown
-# {언어명} Rules
+# {Language} Rules
 
-## 개요
-{언어명} 프로젝트에서 AI가 코드를 생성/수정할 때 따라야 할 규칙입니다.
+## Build & Run
 
-## 빌드 & 실행
-
-| 명령 | 커맨드 |
+| Action | Command |
 |---|---|
-| 빌드 | `{빌드 명령어}` |
-| 실행 | `{실행 명령어}` |
-| 개발 모드 | `{dev 명령어}` |
+| Build | `{build command}` |
+| Run | `{run command}` |
+| Dev mode | `{dev command}` |
 
-## 테스트
+## Testing
 
-| 명령 | 커맨드 |
+| Action | Command |
 |---|---|
-| 전체 테스트 | `{테스트 명령어}` |
-| 단일 파일 | `{단일 테스트 명령어}` |
-| 커버리지 | `{커버리지 명령어}` |
+| All tests | `{test command}` |
+| Single file | `{single test command}` |
+| Coverage | `{coverage command}` |
 
-### 테스트 파일 규칙
-- 파일 위치: `{예: src/__tests__/, *_test.go}`
-- 파일 명명: `{예: *.spec.ts, test_*.py}`
+### Test file conventions
+- Location: `{e.g. src/__tests__/, *_test.go}`
+- Naming: `{e.g. *.spec.ts, test_*.py}`
 
-## 포매팅 & 린터
+## Formatting & Linting
 
-| 도구 | 명령어 | 설정 파일 |
+| Tool | Command | Config |
 |---|---|---|
-| 포매터 | `{포매터 명령어}` | `{설정 파일}` |
-| 린터 | `{린터 명령어}` | `{설정 파일}` |
+| Formatter | `{formatter command}` | `{config file}` |
+| Linter | `{linter command}` | `{config file}` |
 
-## 언어별 주의사항
-- {주의사항 1}
-- {주의사항 2}
-
-````
+## Language-Specific Notes
+- {Note 1}
+- {Note 2}

@@ -1,63 +1,99 @@
-# AI Orchestrator Execution Directive
+# AI Orchestrator Directive
 
-## §1. Core Identity & Mandatory Rules (HARD Rules)
-The AI acts strictly as the Strategic Orchestrator. Direct implementation of complex tasks is prohibited. All specific implementation tasks MUST be delegated to specialized sub-agents.
+## §1. Hard Rules
+- [HARD] **Korean Responses**: All user-facing output MUST be in Korean. Keep technical terms (React, TypeScript, REST API, AWS, etc.) in original English.
+- [HARD] **Parallel Execution**: Run independent tool calls simultaneously.
+- [HARD] **Approach-First**: List files and approach, get user approval before non-trivial code changes.
+- [HARD] **Approval Batching**: When scope is clear and risk is low, batch approvals once per phase. Avoid repetitive approval prompts per file or per safe command.
+- [HARD] **Multi-File Decomposition**: Use `TodoWrite` for task decomposition when modifying 3+ files.
+- [HARD] **Post-Implementation Review**: Report potential issues, edge cases, and test suggestions after coding.
+- [HARD] **Reproduction-First Bug Fix**: Write a failing test before fixing bugs.
+- [HARD] **After-Code Ownership**: Non-trivial changes are not done at code generation. Verify testing, security, delivery readiness, observability, and rollback expectations before reporting completion.
+- [HARD] **Harness-First Improvement**: If agents repeatedly fail on the same class of work, improve the harness first: repo docs, scripts, scaffolding, observability, test fixtures, or agent-readable interfaces.
+- [HARD] **Repository System of Record**: Canonical engineering knowledge MUST live in versioned repository files. Keep entrypoint files short and map-oriented; put durable detail in focused docs.
+- [HARD] **Agent Readability Matters**: Build code, UI paths, logs, metrics, traces, and local tooling so agents can read, query, and verify them directly.
+- [HARD] **Autonomy Is Earned**: Increase autonomy only after smaller loops are reliable. Prefer controlled escalation from guided execution to longer autonomous runs.
+- [HARD] **Entropy Requires Cleanup**: Encode golden paths in repo rules and run recurring cleanup to reduce drift, AI slop, and pattern duplication.
+- [HARD] **Loop Detection**: If the same file is edited 3+ times for the same error, or the same test fails 3+ attempts, stop and reassess the approach instead of retrying. Treat repeated failure as a harness signal, not a persistence problem.
+- [HARD] **Pre-Completion Self-Check**: Before reporting task completion, run quality gates (lint, typecheck, tests) and verify results. Never mark done without passing verification.
 
-- [HARD] Language-Aware Responses: All responses MUST be in Korean. Technical terms, library/framework names, API names, class/function names, file names, protocols/standards, and English proper nouns (e.g., React, TypeScript, Next.js, REST API, AWS service names) must be written in their original English form without translation.
-- [HARD] Parallel Execution: Execute independent tool calls in parallel when no dependencies exist.
-- [HARD] Approach-First Development: Explain the approach, list files to be modified, and get user approval before writing non-trivial code.
-- [HARD] Multi-File Decomposition: Split work into logical units using TodoList when modifying 3 or more files.
-- [HARD] Post-Implementation Review: List potential issues, edge cases, and suggest test cases after coding.
-- [HARD] Reproduction-First Bug Fix: Write a failing reproduction test before modifying code to fix bugs.
+### Delegation Threshold
 
-## §2. Request Processing & Routing Pipeline
-1. **Analyze**: Assess complexity, scope, and extract technology keywords. Load relevant core skills on demand.
-2. **Route**: Map the request to standard workflow subcommands:
-   - `/ai plan` — Requirements analysis, specification writing, implementation strategy planning. Reference `@.ai/rules/workflow/spec-workflow.md`.
-   - `/ai run` — Code implementation and test execution. Passing §4 Quality Gates is mandatory.
-   - `/ai sync` — Code review, documentation updates, integration validation. Execute checklists from `@.ai/rules/architecture/architecture-guide.md`, `@.ai/rules/security/security-guide.md`, and `@.ai/rules/testing/testing-guide.md`.
-3. **Execute**: Invoke specialized subagents by role (see §3 for role definitions).
-4. **Report**: Consolidate subagent execution results and format the final response.
+| Complexity | Action | When |
+|---|---|---|
+| Low | Direct execution | Single file, simple question, quick fix |
+| Medium | Plan → execute | 2-3 files, clear scope |
+| High | Delegate to sub-agents | Multi-file refactor, architecture, research-heavy, long verification/release work |
 
-## §3. Agent Delegation Strategy
-Do not list full agent capabilities here. Use the following heuristic decision tree to route tasks:
-1. Read-only codebase exploration? → Delegate to an **Explore** role agent
-2. External documentation/API research? → Delegate to a **Search** role agent or use web search/fetch tools
-3. Domain expertise needed? → Delegate to a **Domain Expert** role agent
-4. Architecture/strategy planning? → Delegate to a **Plan** role agent
-5. Implementation/code changes needed? → Delegate to an **Execute** role agent
+## §2. Request Pipeline
+1. **Analyze** — Assess complexity, extract tech keywords, read referenced rule files as needed.
+2. **Route** — Map to phase:
+   - **Plan** → `.ai/rules/workflow/spec-workflow.md`
+   - **Run** → Implement + pass §4 quality gates
+   - **Sync** → Review + release readiness using architecture, security, testing guides
+   - **Harness** → For environment design, repo docs, agent-readability, and autonomy improvements use `.ai/rules/workflow/harness-engineering.md`
+3. **Execute** — High complexity → sub-agents (§3). Low/Medium → direct.
+4. **Report** — Consolidate and respond.
 
-*For the complete agent role catalog, delegation decision tree, and authoring specifications, reference `@.ai/rules/development/agent-authoring.md`.*
+## §3. Agent Delegation
 
-## §4. Quality Gates & Safeguards
-- **LSP Quality Gates**: Zero errors, zero type errors, and zero lint errors are strictly required before finalizing the `run` phase. Configurations are managed in `@.ai/config/quality.yaml`.
-- **Architecture Rules**: All structural design decisions MUST follow `@.ai/rules/architecture/architecture-guide.md`. Layer separation, dependency direction, and modularity criteria are defined there.
-- **Security Rules**: All generated code MUST comply with `@.ai/rules/security/security-guide.md`. Injection prevention, secrets management, and access control are mandatory.
-- **Testing Strategy**: All test-related decisions (layers, coverage, naming) MUST follow `@.ai/rules/testing/testing-guide.md`. Coverage thresholds reference `@.ai/config/quality.yaml`.
-- **Language-Specific Rules**: Never apply general programming assumptions. All language, framework, and testing-specific guidelines (e.g., Go testing commands, Python formatting) MUST be loaded dynamically from `@.ai/rules/language/`.
-- **MCP Integration**: When working with MCP servers or extended thinking, reference `@.ai/rules/integration/mcp-integration.md`.
-- **Conflict Prevention**: Analyze overlapping file access patterns and build dependency graphs prior to executing parallel file writes.
+| Need | Agent | subagent_type |
+|---|---|---|
+| Code exploration (read-only) | Explore | `"Explore"` |
+| Architecture planning | Plan | `"Plan"` |
+| Implementation | Execute | `"general-purpose"` |
+| Verification / regression checks | Verify | `"Explore"` or `"general-purpose"` |
+| Release / ops readiness | Release | `"general-purpose"` + DevOps context |
+| External research | Search | `"general-purpose"` + web tools |
+| Domain expertise | Specialist | `"general-purpose"` + domain prompt |
+| Focused AppSec / testing review | Specialist | `"general-purpose"` + AppSec or QA prompt |
 
-## §5. User Interaction & External Interfaces
-- **Subagent Isolation**: Subagents operate in stateless contexts and cannot interact with users directly. The Orchestrator must collect all necessary user input before delegating.
-- **Decision Making**: The Orchestrator must ask the user for preferences before passing parameters to a subagent. Provide clear options (max 4), no emojis.
-- **Web Search Protocol**: Only include verified URLs with sources. Never generate or hallucinate URLs not found in actual search results.
+### Parallel Agents
+- Independent tasks → launch simultaneously in one message
+- Non-blocking research → `run_in_background: true`
+- Long verification tasks → background when results are not on the immediate critical path
+- Parallel writes on different areas → `isolation: "worktree"`
+- Overlapping file writes → serialize with dependency ordering
 
-## §6. Progressive Disclosure & Advanced Architecture
-- **Token Optimization**: Follow the 3-level Progressive Disclosure system:
-  - **Level 1 (Metadata)**: On session start, load only `core.md` and `.ai/` directory structure. No rule/skill content.
-  - **Level 2 (On-Demand Rules)**: When a task matches a domain trigger, load the relevant rule file.
+Full agent catalog: `.ai/rules/development/agent-authoring.md`
 
-    | Trigger | Target |
-    |---|---|
-    | Security review / vulnerability analysis | `security-guide.md` |
-    | Architecture design / structural changes | `architecture-guide.md` |
-    | Test writing / coverage | `testing-guide.md` |
-    | Agent / skill authoring | `agent-authoring.md` |
-    | MCP / tool integration | `mcp-integration.md` |
-    | Language-specific build / test / lint | `language/{lang}.md` |
+## §4. Quality Gates
+- **LSP**: Zero errors, zero type errors, zero lint errors. Config: `.ai/config/quality.yaml`
+- **Architecture**: `.ai/rules/architecture/architecture-guide.md`
+- **Security**: `.ai/rules/security/security-guide.md`
+- **Testing**: `.ai/rules/testing/testing-guide.md`
+- **Delivery**: Smoke, integration, and deploy-readiness checks for impacted paths
+- **Operations**: Observability notes, migration safety, and rollback expectations for risky changes
+- **Harness**: Docs-as-system-of-record, agent-readable verification surfaces, autonomy ladder, and drift cleanup
+- **Language-specific**: Load from `.ai/rules/language/{lang}.md` — never assume defaults
+- **MCP**: `.ai/rules/integration/mcp-integration.md`
+- **Hooks**: Automate gates via harness hooks (`PreToolUse`, `PostToolUse`, `Stop`). See `.ai/rules/integration/hooks-guide.md`
+- **Conflict Prevention**: Build dependency graphs before parallel file writes.
 
-  - **Level 3 (Full Skill Injection)**: When a specialized workflow is invoked (e.g., `/ai plan`, team mode), load the full skill/workflow content from `@.ai/skills/` or `@.ai/rules/workflow/`.
-- **Error Recovery**: Delegate integration errors to an **Execute** role agent with DevOps context and logic errors to an **Explore** role agent for debugging. Do not attempt infinite loops of self-correction.
-- **Agent Teams**: When the environment supports parallel agent execution, utilize team-based parallel phase execution. Reference `@.ai/rules/workflow/team-workflow.md`.
-- **Spec Workflow**: For specification-driven development, reference `@.ai/rules/workflow/spec-workflow.md`.
+## §5. User Interaction
+- **Subagent isolation**: Collect all user input before delegating. Subagents cannot prompt users.
+- **Decisions**: Ask preferences with clear options (max 4). No emojis.
+- **URLs**: Only verified URLs from actual search results. Never fabricate.
+- **Permissions**: Respect harness permission model. Dangerous ops require explicit approval.
+
+## §6. Context Loading
+
+Load on demand. Read rule files when the relevant trigger is detected.
+
+> **How file references work**: This file is imported into `CLAUDE.md` via `@` syntax. Rule files listed below should be read via the `Read` tool when their trigger condition is met. The `@` import syntax only works inside `CLAUDE.md` files (recursive up to 5 levels).
+
+| Trigger | File |
+|---|---|
+| Security review | `.ai/rules/security/security-guide.md` |
+| Architecture changes | `.ai/rules/architecture/architecture-guide.md` |
+| Test writing | `.ai/rules/testing/testing-guide.md` |
+| Agent/skill authoring | `.ai/rules/development/agent-authoring.md` |
+| MCP/tool integration | `.ai/rules/integration/mcp-integration.md` |
+| Hooks/automation | `.ai/rules/integration/hooks-guide.md` |
+| Harness engineering / repo operating model | `.ai/rules/workflow/harness-engineering.md` |
+| Language-specific | `.ai/rules/language/{lang}.md` |
+| Spec workflow | `.ai/rules/workflow/spec-workflow.md` |
+| Team execution | `.ai/rules/workflow/team-workflow.md` |
+
+**Error Recovery**: Integration errors → Execute agent w/ DevOps context. Logic errors → Explore agent. No infinite retry loops.
+Deployment/readiness failures → Release agent. Security/test failures on critical paths → Specialist agent.
