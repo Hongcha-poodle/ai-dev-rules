@@ -20,6 +20,11 @@ ai-dev-rules/
 │   ├── core.md                          # 전역 AI 오케스트레이터 지침
 │   ├── config/
 │   │   └── quality.yaml                 # LSP/테스트 품질 게이트 설정
+│   ├── entry-points/                    # 관리 영역 (셋업 시 항상 최신으로 덮어씀)
+│   │   ├── claude.md                    # Claude Code 하네스 설정
+│   │   ├── copilot.md                   # GitHub Copilot 설정
+│   │   ├── antigravity.md               # Google Antigravity 설정
+│   │   └── codex.md                     # OpenAI Codex 설정
 │   ├── rules/
 │   │   ├── architecture/
 │   │   │   └── architecture-guide.md    # 아키텍처 설계 원칙
@@ -67,7 +72,7 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 스크립트가 자동으로 수행하는 작업:
 
 1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 선택 또는 전체 설치
-2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `skills/README.md`
+2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `entry-points/` 관리 템플릿, `skills/README.md`
 3. **`docs/` 권장 구조 생성** — 아래 표준 디렉토리와 기본 파일을 생성합니다:
    ```
    docs/
