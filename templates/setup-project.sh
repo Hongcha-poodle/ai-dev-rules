@@ -88,6 +88,17 @@ download_file ".ai/rules/language/_template.md" "$AI_DIR/rules/language/_templat
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"
 
+# entry-points (managed templates — always overwritten for updates)
+entry_points=(
+  "entry-points/claude.md"
+  "entry-points/copilot.md"
+  "entry-points/antigravity.md"
+  "entry-points/codex.md"
+)
+for ep in "${entry_points[@]}"; do
+  download_file ".ai/$ep" "$AI_DIR/$ep"
+done
+
 # --- 2.5 권장 docs/ 구조 생성 ---
 echo ""
 echo "[권장 docs 구조 생성]"
@@ -130,13 +141,15 @@ echo "[진입점 파일 생성]"
 create_entry_point() {
   local tool_name="$1"
   local local_path="$2"
+  local managed_ref="$3"
 
   local dest_dir
   dest_dir="$(dirname "$local_path")"
   mkdir -p "$dest_dir"
 
   if [ -f "$local_path" ]; then
-    echo "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $local_path"
+    echo "ℹ 진입점 파일이 이미 존재합니다 (건너뜀): $local_path"
+    echo "  → 관리 영역은 $managed_ref 에서 자동 업데이트됩니다."
     return
   fi
 
@@ -144,7 +157,9 @@ create_entry_point() {
 # $tool_name Instructions
 
 > **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in versioned docs under \`docs/\` and rules under \`.ai/\`.
-> Before executing any task, you MUST read and strictly adhere to the global AI rules defined in \`.ai/core.md\` and relevant files in \`.ai/rules/\`.
+> Before executing any task, you MUST read the following files in order:
+> 1. \`.ai/core.md\` — global AI rules
+> 2. \`$managed_ref\` — managed configuration (auto-updated)
 
 ---
 ## Project Specific Instructions
@@ -155,14 +170,16 @@ create_entry_point() {
 - Verification Commands:
 EOF
 
-  echo "✔ 진입점 생성 완료 (core.md 참조): $local_path"
+  echo "✔ 진입점 생성 완료: $local_path"
+  echo "  → 관리 영역: $managed_ref (업데이트 시 자동 반영)"
 }
 
 create_claude_entry_point() {
   local local_path="$1"
 
   if [ -f "$local_path" ]; then
-    echo "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $local_path"
+    echo "ℹ 진입점 파일이 이미 존재합니다 (건너뜀): $local_path"
+    echo "  → 관리 영역은 .ai/entry-points/claude.md 에서 자동 업데이트됩니다."
     return
   fi
 
@@ -171,41 +188,10 @@ create_claude_entry_point() {
 
 > **CRITICAL**: Keep this file short and map-oriented. Durable project knowledge belongs in `docs/` and `.ai/`.
 > Before executing any task, you MUST read and strictly adhere to the global AI rules defined in `.ai/core.md` and relevant files in `.ai/rules/`.
+> Managed configuration (auto-updated): `.ai/entry-points/claude.md`
 
 ## Harness Configuration
-
-### Context Loading
-This file is loaded automatically at session start. Additional rules are loaded on demand:
-- Architecture decisions → @.ai/rules/architecture/architecture-guide.md
-- Security review → @.ai/rules/security/security-guide.md
-- Test writing → @.ai/rules/testing/testing-guide.md
-- Harness engineering / repo operating model → @.ai/rules/workflow/harness-engineering.md
-- MCP integration → @.ai/rules/integration/mcp-integration.md
-- Hooks setup → @.ai/rules/integration/hooks-guide.md
-- Language rules → @.ai/rules/language/{lang}.md
-
-### Repository System of Record
-- `docs/index.md` is the starting map for durable project knowledge
-- Keep this file concise; move detailed architecture/product/reliability knowledge into `docs/`
-- Prefer repo scripts and docs over repeated prompt explanations
-
-### Recommended Hooks (.claude/settings.json)
-See `.ai/rules/integration/hooks-guide.md` for hook configuration examples.
-Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
-
-### Permissions
-Configure in `.claude/settings.json`:
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(npm run lint*)",
-      "Bash(npm test*)",
-      "Bash(npx tsc*)"
-    ]
-  }
-}
-```
+@.ai/entry-points/claude.md
 
 ---
 ## Project Specific Instructions
@@ -216,31 +202,27 @@ Configure in `.claude/settings.json`:
 - Verification Commands:
 CLAUDEEOF
 
-  echo "✔ 진입점 생성 완료 (harness-specific, core.md 참조): $local_path"
+  echo "✔ 진입점 생성 완료 (harness config → .ai/entry-points/claude.md): $local_path"
 }
 
 [ "${install_claude:-false}" = true ] && create_claude_entry_point "$PROJECT_PATH/CLAUDE.md"
-[ "${install_copilot:-false}" = true ] && create_entry_point "GitHub Copilot" "$PROJECT_PATH/.github/copilot-instructions.md"
-[ "${install_antigravity:-false}" = true ] && create_entry_point "Google Antigravity" "$PROJECT_PATH/.agent/rules/rules.md"
+[ "${install_copilot:-false}" = true ] && create_entry_point "GitHub Copilot" "$PROJECT_PATH/.github/copilot-instructions.md" ".ai/entry-points/copilot.md"
+[ "${install_antigravity:-false}" = true ] && create_entry_point "Google Antigravity" "$PROJECT_PATH/.agent/rules/rules.md" ".ai/entry-points/antigravity.md"
 if [ "${install_codex:-false}" = true ]; then
   if [ -f "$PROJECT_PATH/AGENTS.md" ]; then
-    echo "⚠ 진입점 파일이 이미 존재합니다. 덮어쓰지 않습니다: $PROJECT_PATH/AGENTS.md"
+    echo "ℹ 진입점 파일이 이미 존재합니다 (건너뜀): $PROJECT_PATH/AGENTS.md"
+    echo "  → 관리 영역은 .ai/entry-points/codex.md 에서 자동 업데이트됩니다."
   else
     cat > "$PROJECT_PATH/AGENTS.md" << 'AGENTSEOF'
 # AGENTS.md
 
 This file is a short map for agents. Keep it concise.
+Managed configuration (auto-updated): `.ai/entry-points/codex.md`
 
 ## Read First
 - `.ai/core.md`
+- `.ai/entry-points/codex.md`
 - `docs/index.md`
-
-## Load On Demand
-- Architecture → `.ai/rules/architecture/architecture-guide.md`
-- Security → `.ai/rules/security/security-guide.md`
-- Testing → `.ai/rules/testing/testing-guide.md`
-- Harness engineering → `.ai/rules/workflow/harness-engineering.md`
-- Team workflow → `.ai/rules/workflow/team-workflow.md`
 
 ## Project Map
 - Product overview:
@@ -248,7 +230,8 @@ This file is a short map for agents. Keep it concise.
 - Important docs:
 - Key commands:
 AGENTSEOF
-    echo "✔ 진입점 생성 완료 (agent-map style): $PROJECT_PATH/AGENTS.md"
+    echo "✔ 진입점 생성 완료: $PROJECT_PATH/AGENTS.md"
+    echo "  → 관리 영역: .ai/entry-points/codex.md (업데이트 시 자동 반영)"
   fi
 fi
 
@@ -257,5 +240,7 @@ echo ""
 echo "셋업 완료: $PROJECT_PATH"
 echo ""
 echo "다음 단계:"
-echo "  1. 프로젝트에 생성된 진입점 파일(CLAUDE.md, .agent/rules/rules.md, .github/copilot-instructions.md, AGENTS.md 중 선택한 것)을 열어 프로젝트별 지침을 추가하세요."
-echo "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조하게 됩니다."
+echo "  1. 진입점 파일의 'Project Specific Instructions' 섹션에 프로젝트별 지침을 추가하세요."
+echo "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조합니다."
+echo "  3. 워크플로 업데이트 시 이 스크립트를 다시 실행하면 .ai/ 전체가 업데이트됩니다."
+echo "     (진입점 파일의 프로젝트별 지침은 보존됩니다)"

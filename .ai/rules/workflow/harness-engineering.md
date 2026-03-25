@@ -43,7 +43,16 @@ Repository operating model for agent-first software development.
 ## Recommended Repo Shape
 
 ```text
-AGENTS.md / CLAUDE.md       # Short map, not encyclopedia
+AGENTS.md / CLAUDE.md       # Short map, not encyclopedia (project-specific only)
+.ai/
+  core.md                   # Global AI orchestrator rules
+  entry-points/             # Managed tool configs (auto-updated by setup script)
+    claude.md
+    copilot.md
+    codex.md
+  config/quality.yaml       # Quality gate thresholds
+  rules/                    # Modular rule files (loaded on demand)
+  skills/                   # Custom skills
 docs/
   index.md                  # Table of contents
   architecture/

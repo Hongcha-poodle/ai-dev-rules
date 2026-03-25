@@ -81,6 +81,8 @@ Full agent catalog: `.ai/rules/development/agent-authoring.md`
 Load on demand. Read rule files when the relevant trigger is detected.
 
 > **How file references work**: This file is imported into `CLAUDE.md` via `@` syntax. Rule files listed below should be read via the `Read` tool when their trigger condition is met. The `@` import syntax only works inside `CLAUDE.md` files (recursive up to 5 levels).
+>
+> **Managed entry-point configuration**: Tool-specific harness settings (context loading map, hooks guidance, permissions) live in `.ai/entry-points/{tool}.md`. These files are updated automatically by the setup script. Project-specific instructions stay in the entry-point file itself (`CLAUDE.md`, `AGENTS.md`, etc.).
 
 | Trigger | File |
 |---|---|

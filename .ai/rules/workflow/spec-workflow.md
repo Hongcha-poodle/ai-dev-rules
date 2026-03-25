@@ -106,4 +106,5 @@ Sync → Done: Checklists pass + rollout/rollback expectations are clear + repo 
 - [ ] Architecture/security/testing checklists executed?
 - [ ] Deploy-readiness and rollback expectations documented?
 - [ ] Durable repo knowledge and harness improvements captured?
+- [ ] Entry-point managed config (`.ai/entry-points/`) consistent with workflow changes?
 - [ ] Potential issues and edge cases reported?

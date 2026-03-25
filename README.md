@@ -85,12 +85,12 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
    | AI 도구 | 진입점 파일 | 특징 |
    |---|---|---|
-   | Claude Code | `CLAUDE.md` | Context Loading, Hooks, Permissions 등 하네스 전용 설정 포함 |
-   | GitHub Copilot | `.github/copilot-instructions.md` | 공통 템플릿 |
-   | Google Antigravity | `.agent/rules/rules.md` | 공통 템플릿 |
-   | OpenAI Codex | `AGENTS.md` | Read First / Load On Demand 맵 스타일 |
+   | Claude Code | `CLAUDE.md` | `.ai/entry-points/claude.md` 참조 (하네스 설정) |
+   | GitHub Copilot | `.github/copilot-instructions.md` | `.ai/entry-points/copilot.md` 참조 |
+   | Google Antigravity | `.agent/rules/rules.md` | `.ai/entry-points/antigravity.md` 참조 |
+   | OpenAI Codex | `AGENTS.md` | `.ai/entry-points/codex.md` 참조 |
 
-> 이미 존재하는 진입점 파일은 덮어쓰지 않습니다.
+> 이미 존재하는 진입점 파일은 덮어쓰지 않습니다. 하지만 관리 영역(`.ai/entry-points/`)은 항상 최신으로 업데이트됩니다.
 
 ## Harness 엔지니어링 관점의 권장 운영 방식
 
@@ -104,8 +104,9 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 프로젝트에 설치된 규칙을 최신 버전으로 업데이트하려면 셋업 스크립트를 다시 실행하세요.
 
-- 기존 `.ai/` 규칙 파일은 최신 버전으로 **덮어쓰기**됩니다.
+- 기존 `.ai/` 규칙 파일과 `.ai/entry-points/`는 최신 버전으로 **덮어쓰기**됩니다.
 - 진입점 파일(`CLAUDE.md`, `AGENTS.md` 등)은 이미 존재하면 **건너뜁니다** — 프로젝트별 커스터마이징이 유지됩니다.
+- 워크플로 템플릿 변경 사항은 `.ai/entry-points/`를 통해 기존 프로젝트에도 자동 반영됩니다.
 - `docs/` 디렉토리의 기존 파일도 건너뜁니다.
 
 ## 프로젝트별 커스터마이징

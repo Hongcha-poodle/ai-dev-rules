@@ -233,7 +233,7 @@ Detect doom loops where the agent repeatedly edits the same file without progres
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); COUNTER=\"/tmp/claude-edit-counter-$(echo \"$FILE\" | md5sum | cut -d' ' -f1)\"; COUNT=$(cat \"$COUNTER\" 2>/dev/null || echo 0); COUNT=$((COUNT+1)); echo $COUNT > \"$COUNTER\"; if [ $COUNT -ge 4 ]; then echo \"LOOP DETECTED: $FILE edited $COUNT times. Stop and reassess approach.\" >&2; rm -f \"$COUNTER\"; fi"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); HASH=$(printf '%s' \"$FILE\" | cksum | cut -d' ' -f1); COUNTER=\"/tmp/claude-edit-counter-$HASH\"; COUNT=$(cat \"$COUNTER\" 2>/dev/null || echo 0); COUNT=$((COUNT+1)); echo $COUNT > \"$COUNTER\"; if [ $COUNT -ge 4 ]; then echo \"LOOP DETECTED: $FILE edited $COUNT times. Stop and reassess approach.\" >&2; rm -f \"$COUNTER\"; fi"
           }
         ]
       }
@@ -267,6 +267,8 @@ Run quality gates automatically before the agent finishes, surfacing failures as
 ```
 
 This hook **blocks completion** (exit 2) if lint, typecheck, or tests fail, forcing the agent to fix issues before finishing.
+
+> **Note**: The example above uses npm/tsc commands. Adapt to your project's toolchain (e.g., `ruff check` + `mypy` + `pytest` for Python, `golangci-lint run` + `go test ./...` for Go). See Language-Specific Hooks above for per-language examples.
 
 ## Permission Pairing
 
