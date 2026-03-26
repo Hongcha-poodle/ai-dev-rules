@@ -34,6 +34,14 @@
 - Well-defined role and scope
 - Avoid feature overload
 
+### Self-Evaluation Separation
+- The agent that generates code MUST NOT be the sole evaluator of its quality
+- Agents tend to confidently praise their own mediocre output (known failure mode)
+- Always use a separate Verify or Evaluator agent for quality grading
+- In long-running sessions, use a GAN-inspired pattern: Generator + independent Evaluator
+- The Evaluator should have explicit grading criteria that penalize generic "AI slop" patterns
+- See `.ai/rules/workflow/long-running-guide.md` for multi-session evaluation patterns
+
 ### Clear Interface
 - Define inputs and outputs explicitly
 - Specify error handling behavior
@@ -74,6 +82,7 @@
 - Verify inter-agent interaction
 - Test real usage scenarios
 - Verify handoff quality between Execute → Verify → Release
+- Verify that Evaluator agents produce different (often harsher) assessments than Generator self-reports
 - Verify whether the repo needs a Harness / Enablement agent to improve docs, scripts, or observability
 
 ## Documentation Requirements

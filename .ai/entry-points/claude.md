@@ -10,6 +10,7 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 - Security review → `.ai/rules/security/security-guide.md`
 - Test writing → `.ai/rules/testing/testing-guide.md`
 - Harness engineering / repo operating model → `.ai/rules/workflow/harness-engineering.md`
+- Long-running / multi-session tasks → `.ai/rules/workflow/long-running-guide.md`
 - MCP integration → `.ai/rules/integration/mcp-integration.md`
 - Hooks setup → `.ai/rules/integration/hooks-guide.md`
 - Language rules → `.ai/rules/language/{lang}.md`
