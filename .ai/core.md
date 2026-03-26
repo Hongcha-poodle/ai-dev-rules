@@ -16,6 +16,7 @@
 - [HARD] **Entropy Requires Cleanup**: Encode golden paths in repo rules and run recurring cleanup to reduce drift, AI slop, and pattern duplication.
 - [HARD] **Loop Detection**: If the same file is edited 3+ times for the same error, or the same test fails 3+ attempts, stop and reassess the approach instead of retrying. Treat repeated failure as a harness signal, not a persistence problem.
 - [HARD] **Pre-Completion Self-Check**: Before reporting task completion, run quality gates (lint, typecheck, tests) and verify results. Never mark done without passing verification.
+- [HARD] **Self-Evaluation Separation**: The agent that implements code MUST NOT be the sole evaluator of its own output. Use a separate Verify or Evaluator agent for quality grading. Agents self-praising mediocre work is a known failure mode.
 
 ### Delegation Threshold
 
@@ -95,6 +96,7 @@ Load on demand. Read rule files when the relevant trigger is detected.
 | Harness engineering / repo operating model | `.ai/rules/workflow/harness-engineering.md` |
 | Language-specific | `.ai/rules/language/{lang}.md` |
 | Spec workflow | `.ai/rules/workflow/spec-workflow.md` |
+| Long-running / multi-session tasks | `.ai/rules/workflow/long-running-guide.md` |
 | Team execution | `.ai/rules/workflow/team-workflow.md` |
 
 **Error Recovery**: Integration errors → Execute agent w/ DevOps context. Logic errors → Explore agent. No infinite retry loops.

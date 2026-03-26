@@ -81,6 +81,39 @@ docs/
 - Automate via `Stop` hook that blocks completion on failure.
 - Human review focuses on design and intent, not catching lint errors.
 
+## Model Capability Matrix
+
+Harness constraints should evolve as models improve. Design constraints to be **rippable** — remove them when the model no longer needs them.
+
+### Context Management by Model Capability
+
+| Model Trait | Harness Strategy | When to Rip |
+|---|---|---|
+| Context anxiety (quality degrades with long context) | Context resets between sessions with handoff artifacts | Model maintains quality across full context window |
+| Weak decomposition (tries to do everything at once) | Sprint/feature-list structure with one-feature-at-a-time rule | Model naturally decomposes and sequences work |
+| Self-evaluation bias (praises own mediocre work) | Separate Evaluator agent with explicit grading criteria | Model produces calibrated self-assessments |
+| Loses track in large codebases | Frequent pwd checks, explicit file maps, short entrypoints | Model reliably navigates large repos |
+| Premature completion (declares done too early) | Stop hook with quality gate enforcement | Model self-verifies reliably before completion |
+
+### Tuning Checklist
+
+When adopting a new model version:
+1. Test whether context resets are still needed (run long session, check quality at end)
+2. Test whether work decomposition (sprints/feature lists) is still needed
+3. Test self-evaluation accuracy (compare agent self-grade vs independent Evaluator)
+4. Adjust autonomy level based on observed reliability
+5. Document model-specific harness overrides in project `CLAUDE.md` or `AGENTS.md`
+
+### Practical Examples
+
+```text
+Sonnet 4.5:  Context resets required, sprint decomposition required, separate evaluator required
+Opus 4.5:    Context resets removable (compaction sufficient), sprint decomposition helpful
+Opus 4.6:    Context resets removable, sprint decomposition removable, planner+evaluator still valuable
+```
+
+> Continuously re-evaluate. The right harness for today's model may be over-constrained for tomorrow's.
+
 ## Execution Heuristics
 
 ### When to improve the harness

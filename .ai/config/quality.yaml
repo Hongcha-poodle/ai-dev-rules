@@ -30,6 +30,13 @@ gates:
     autonomy_ladder_required_for_long_runs: true
     entropy_cleanup_loop_required: true
 
+  ui_design:
+    originality_required: true               # Penalize generic "AI slop" patterns
+    accessibility_check_required: true        # WCAG compliance for user-facing UI
+    screenshot_verification_required: true    # Agent must visually verify UI output
+    responsive_check_required: true           # Verify layout across breakpoints
+    design_system_consistency_required: true   # Match project's existing design tokens/components
+
   review:
     require_approval: true
     require_edge_case_report: true
