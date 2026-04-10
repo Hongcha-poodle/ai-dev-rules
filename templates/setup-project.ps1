@@ -70,6 +70,7 @@ $rules = @(
     "security/security-guide.md",
     "testing/testing-guide.md",
     "workflow/harness-engineering.md",
+    "workflow/long-running-guide.md",
     "workflow/spec-workflow.md",
     "workflow/team-workflow.md"
 )
