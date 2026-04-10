@@ -1,0 +1,13 @@
+{
+  "name": "streamboard-fixture",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "lint": "node -e \"console.log('lint ok')\"",
+    "typecheck": "node -e \"console.log('typecheck ok')\"",
+    "test": "node -e \"console.log('unit ok')\"",
+    "test:integration": "node -e \"console.log('integration ok')\"",
+    "test:e2e": "node -e \"console.log('e2e ok')\"",
+    "build": "node -e \"console.log('build ok')\""
+  }
+}

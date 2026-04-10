@@ -84,6 +84,14 @@ Download-File -RemotePath ".ai/rules/language/_template.md" -LocalPath (Join-Pat
 
 # skills
 Download-File -RemotePath ".ai/skills/README.md" -LocalPath (Join-Path $DestAiDir "skills\README.md")
+Download-File -RemotePath ".ai/skills/harness/SKILL.md" -LocalPath (Join-Path $DestAiDir "skills\harness\SKILL.md")
+Download-File -RemotePath ".ai/skills/harness/templates/README.md" -LocalPath (Join-Path $DestAiDir "skills\harness\templates\README.md")
+Download-File -RemotePath ".ai/skills/harness/templates/fullstack-app-starter.md" -LocalPath (Join-Path $DestAiDir "skills\harness\templates\fullstack-app-starter.md")
+Download-File -RemotePath ".ai/skills/harness/templates/code-review-starter.md" -LocalPath (Join-Path $DestAiDir "skills\harness\templates\code-review-starter.md")
+Download-File -RemotePath ".ai/skills/harness/templates/research-content-starter.md" -LocalPath (Join-Path $DestAiDir "skills\harness\templates\research-content-starter.md")
+Download-File -RemotePath ".ai/skills/harness/references/pattern-selection.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\pattern-selection.md")
+Download-File -RemotePath ".ai/skills/harness/references/output-contract.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\output-contract.md")
+Download-File -RemotePath ".ai/skills/harness/references/harness-100-template-pack.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\harness-100-template-pack.md")
 
 # entry-points (managed templates — always overwritten for updates)
 $entryPoints = @(
@@ -263,5 +271,6 @@ Write-Host "`n셋업 완료: $ProjectPath`n"
 Write-Host "다음 단계:"
 Write-Host "  1. 진입점 파일의 'Project Specific Instructions' 섹션에 프로젝트별 지침을 추가하세요."
 Write-Host "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조합니다."
-Write-Host "  3. 워크플로 업데이트 시 이 스크립트를 다시 실행하면 .ai/ 전체가 업데이트됩니다."
+Write-Host "  3. 프로젝트 하네스가 필요하면 '하네스 구성해'라고 요청하세요. (.ai/skills/harness)"
+Write-Host "  4. 워크플로 업데이트 시 이 스크립트를 다시 실행하면 .ai/ 전체가 업데이트됩니다."
 Write-Host "     (진입점 파일의 프로젝트별 지침은 보존됩니다)"

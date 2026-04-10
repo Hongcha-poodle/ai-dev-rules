@@ -45,7 +45,8 @@ ai-dev-rules/
 │   │       ├── spec-workflow.md         # SPEC 워크플로우 (Plan-Run-Sync)
 │   │       └── team-workflow.md         # 팀 역할 매핑 및 협업 워크플로우
 │   └── skills/
-│       └── README.md                    # 커스텀 스킬 추가 방법 안내
+│       ├── README.md                    # 커스텀 스킬 추가 방법 안내
+│       └── harness/                     # "하네스 구성해"용 harness bootstrap skill
 └── templates/
     ├── setup-project.sh                 # 셋업 스크립트 (macOS/Linux)
     └── setup-project.ps1                # 셋업 스크립트 (Windows)
@@ -73,6 +74,7 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 선택 또는 전체 설치
 2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `entry-points/` 관리 템플릿, `skills/README.md`
+   - 포함 스킬: `harness` (`하네스 구성해`, `build a harness for this project` 요청용)
 3. **`docs/` 권장 구조 생성** — 아래 표준 디렉토리와 기본 파일을 생성합니다:
    ```
    docs/
@@ -104,6 +106,40 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 - **에이전트 가독성 표면 확대** — UI/로그/메트릭/추적처럼 에이전트가 직접 읽고 검증할 수 있는 인터페이스를 늘립니다.
 - **작은 PR + 정리 루프** — 작은 PR과 빠른 검증을 기본으로 하고, 드리프트와 AI slop을 줄이기 위한 정리 루프를 둡니다.
 - **루프 감지** — 동일 파일 3회 이상 편집 또는 동일 테스트 3회 이상 실패 시 재시도 대신 접근 방식을 재평가합니다.
+
+## `하네스 구성해` 명령 지원
+
+이 저장소에는 프로젝트 맞춤 harness를 부트스트랩하는 `.ai/skills/harness/` 스킬이 포함되어 있습니다.
+
+- 트리거 예시:
+  - `하네스 구성해`
+  - `하네스 설치해`
+  - `하네스 세팅해`
+  - `하네스 셋팅해`
+  - `이 프로젝트에 맞는 하네스 설계해`
+  - `build a harness for this project`
+- 스킬이 수행하는 일:
+  - 현재 프로젝트의 entrypoint, `docs/`, 검증 명령, hook/automation 가능성을 감사
+  - 작업 성격에 맞는 orchestration pattern 선택
+  - tool/environment에 맞는 harness 산출물 생성
+  - verification surface와 cleanup loop까지 포함한 validation plan 작성
+- Claude Code 프로젝트에서는 `.claude/agents/`, `.claude/skills/`, `.claude/settings.json`까지 포함하는 쪽을 우선 검토합니다.
+- 그 외 환경에서는 `docs/harness/`, verification contract, role map, harness bootstrap plan 같은 repo-local artifacts를 생성합니다.
+- `revfactory/harness-100`의 검증된 패키지 관례를 distilled template pack 형태로 참고하여, 공통 골격은 재사용하고 도메인 세부사항은 프로젝트에 맞게 재구성합니다.
+- starter template packs:
+  - `fullstack-app-starter`
+  - `code-review-starter`
+  - `research-content-starter`
+
+## Dry-Run Fixture
+
+- `fixtures/fullstack-harness-smoke/`는 설치 후 `하네스 설치해` 또는 `하네스 구성해` 요청이 들어왔을 때 기대하는 산출물 형태를 보여주는 fullstack fixture입니다.
+- 포함 내용:
+  - 짧은 `AGENTS.md`, `CLAUDE.md`
+  - `docs/harness/` 문서 세트
+  - `.claude/agents/` specialist roles
+  - `.claude/skills/` orchestrator / extension skill 예시
+  - `_workspace/` artifact convention
 
 ## 전역 규칙 업데이트
 

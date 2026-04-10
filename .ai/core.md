@@ -17,6 +17,7 @@
 - [HARD] **Loop Detection**: If the same file is edited 3+ times for the same error, or the same test fails 3+ attempts, stop and reassess the approach instead of retrying. Treat repeated failure as a harness signal, not a persistence problem.
 - [HARD] **Pre-Completion Self-Check**: Before reporting task completion, run quality gates (lint, typecheck, tests) and verify results. Never mark done without passing verification.
 - [HARD] **Self-Evaluation Separation**: The agent that implements code MUST NOT be the sole evaluator of its own output. Use a separate Verify or Evaluator agent for quality grading. Agents self-praising mediocre work is a known failure mode.
+- [HARD] **Harness Bootstrap Is a Build Task**: When the user asks to build or repair a harness, generate reusable repo artifacts (docs, hooks, scripts, agents, skills), not just a prose recommendation.
 
 ### Delegation Threshold
 
@@ -94,6 +95,7 @@ Load on demand. Read rule files when the relevant trigger is detected.
 | MCP/tool integration | `.ai/rules/integration/mcp-integration.md` |
 | Hooks/automation | `.ai/rules/integration/hooks-guide.md` |
 | Harness engineering / repo operating model | `.ai/rules/workflow/harness-engineering.md` |
+| Harness bootstrap / `하네스 구성해`, `하네스 설치해`, `하네스 세팅해` | `.ai/skills/harness/SKILL.md` |
 | Language-specific | `.ai/rules/language/{lang}.md` |
 | Spec workflow | `.ai/rules/workflow/spec-workflow.md` |
 | Long-running / multi-session tasks | `.ai/rules/workflow/long-running-guide.md` |

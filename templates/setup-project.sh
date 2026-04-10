@@ -87,6 +87,14 @@ download_file ".ai/rules/language/_template.md" "$AI_DIR/rules/language/_templat
 
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"
+download_file ".ai/skills/harness/SKILL.md" "$AI_DIR/skills/harness/SKILL.md"
+download_file ".ai/skills/harness/templates/README.md" "$AI_DIR/skills/harness/templates/README.md"
+download_file ".ai/skills/harness/templates/fullstack-app-starter.md" "$AI_DIR/skills/harness/templates/fullstack-app-starter.md"
+download_file ".ai/skills/harness/templates/code-review-starter.md" "$AI_DIR/skills/harness/templates/code-review-starter.md"
+download_file ".ai/skills/harness/templates/research-content-starter.md" "$AI_DIR/skills/harness/templates/research-content-starter.md"
+download_file ".ai/skills/harness/references/pattern-selection.md" "$AI_DIR/skills/harness/references/pattern-selection.md"
+download_file ".ai/skills/harness/references/output-contract.md" "$AI_DIR/skills/harness/references/output-contract.md"
+download_file ".ai/skills/harness/references/harness-100-template-pack.md" "$AI_DIR/skills/harness/references/harness-100-template-pack.md"
 
 # entry-points (managed templates — always overwritten for updates)
 entry_points=(
@@ -242,5 +250,6 @@ echo ""
 echo "다음 단계:"
 echo "  1. 진입점 파일의 'Project Specific Instructions' 섹션에 프로젝트별 지침을 추가하세요."
 echo "  2. 공통 규칙은 .ai/core.md 및 .ai/rules/ 폴더를 참조합니다."
-echo "  3. 워크플로 업데이트 시 이 스크립트를 다시 실행하면 .ai/ 전체가 업데이트됩니다."
+echo "  3. 프로젝트 하네스가 필요하면 '하네스 구성해'라고 요청하세요. (.ai/skills/harness)"
+echo "  4. 워크플로 업데이트 시 이 스크립트를 다시 실행하면 .ai/ 전체가 업데이트됩니다."
 echo "     (진입점 파일의 프로젝트별 지침은 보존됩니다)"

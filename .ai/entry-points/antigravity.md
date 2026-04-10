@@ -13,7 +13,12 @@ Before executing any task, you MUST read and strictly adhere to the global AI ru
 - Test writing → `.ai/rules/testing/testing-guide.md`
 - Workflow → `.ai/rules/workflow/harness-engineering.md`
 - Team workflow → `.ai/rules/workflow/team-workflow.md`
+- Harness bootstrap requests like `하네스 구성해`, `하네스 설치해`, `하네스 세팅해`, `하네스 셋팅해` → `.ai/skills/harness/SKILL.md`
 
 ## Repository System of Record
 - `docs/index.md` is the starting map for durable project knowledge
 - Keep instructions concise; move detailed knowledge into `docs/`
+
+## Harness Bootstrap
+- If the user asks to build, install, set up, or repair a harness, load `.ai/skills/harness/SKILL.md`.
+- Prefer durable repo artifacts and verification surfaces over one-time explanations.
