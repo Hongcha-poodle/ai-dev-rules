@@ -42,6 +42,7 @@ ai-dev-rules/
 │   │   │   └── testing-guide.md         # 테스트 전략 가이드
 │   │   └── workflow/
 │   │       ├── harness-engineering.md   # 하네스 엔지니어링 운영 가이드
+│   │       ├── long-running-guide.md    # 장기 실행/멀티세션 작업 가이드
 │   │       ├── spec-workflow.md         # SPEC 워크플로우 (Plan-Run-Sync)
 │   │       └── team-workflow.md         # 팀 역할 매핑 및 협업 워크플로우
 │   └── skills/
