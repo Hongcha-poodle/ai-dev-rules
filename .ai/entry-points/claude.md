@@ -13,7 +13,6 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 - Long-running / multi-session tasks → `.ai/rules/workflow/long-running-guide.md`
 - MCP integration → `.ai/rules/integration/mcp-integration.md`
 - Hooks setup → `.ai/rules/integration/hooks-guide.md`
-- Harness bootstrap requests like `하네스 구성해`, `하네스 설치해`, `하네스 세팅해`, `하네스 셋팅해` → `.ai/skills/harness/SKILL.md`
 - Language rules → `.ai/rules/language/{lang}.md`
 
 ## Repository System of Record
@@ -24,10 +23,6 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 ## Recommended Hooks (.claude/settings.json)
 See `.ai/rules/integration/hooks-guide.md` for hook configuration examples.
 Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
-
-## Harness Bootstrap
-- If the user asks to build, install, set up, repair, or extend a harness, load `.ai/skills/harness/SKILL.md`.
-- Prefer generating reusable `.claude/agents/`, `.claude/skills/`, and hook/config artifacts over one-off chat guidance.
 
 ## Permissions
 Configure in `.claude/settings.json`:

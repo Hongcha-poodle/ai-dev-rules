@@ -95,7 +95,6 @@ Load on demand. Read rule files when the relevant trigger is detected.
 | MCP/tool integration | `.ai/rules/integration/mcp-integration.md` |
 | Hooks/automation | `.ai/rules/integration/hooks-guide.md` |
 | Harness engineering / repo operating model | `.ai/rules/workflow/harness-engineering.md` |
-| Harness bootstrap / `하네스 구성해`, `하네스 설치해`, `하네스 세팅해` | `.ai/skills/harness/SKILL.md` |
 | Language-specific | `.ai/rules/language/{lang}.md` |
 | Spec workflow | `.ai/rules/workflow/spec-workflow.md` |
 | Long-running / multi-session tasks | `.ai/rules/workflow/long-running-guide.md` |

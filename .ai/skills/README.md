@@ -54,11 +54,10 @@ Use a bundled skill when:
 Example:
 
 ```text
-.ai/skills/harness/
+.ai/skills/my-skill/
   SKILL.md
   templates/
-    fullstack-app-starter.md
+    starter.md
   references/
-    pattern-selection.md
-    output-contract.md
+    decision-guide.md
 ```
