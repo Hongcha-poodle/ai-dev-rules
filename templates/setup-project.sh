@@ -78,7 +78,6 @@ download_file() {
   mkdir -p "$dest_dir"
 
   local url="$REPO_URL/$remote_path"
-<<<<<<< HEAD
   local attempt
   for attempt in 1 2 3; do
     if curl -fsSL "$url" -o "$local_path"; then
@@ -94,14 +93,6 @@ download_file() {
 
   echo "✖ 다운로드 최종 실패: $url" >&2
   exit 1
-=======
-  if curl -fsSL "$url" -o "$local_path"; then
-    echo "✔ 다운로드 완료: $local_path"
-  else
-    echo "⚠ 다운로드 실패: $url" >&2
-    exit 1
-  fi
->>>>>>> 39f3ffd197bbf8ee29836449df3a68351fb8cc79
 }
 
 # --- 2. .ai 폴더 및 핵심 규칙 다운로드 ---
