@@ -18,5 +18,5 @@
 
 ## Notes
 
-- In this fixture the commands are lightweight placeholders so the harness shape is easy to inspect.
-- In a real project these commands must map to the actual toolchain.
+- In this fixture the commands validate the harness contract itself rather than a product runtime.
+- In a real project these commands should be replaced with the repository's actual toolchain commands.

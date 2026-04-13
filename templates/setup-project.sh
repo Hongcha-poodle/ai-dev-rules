@@ -5,24 +5,56 @@
 # 사용법:
 #   bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
 
-set -e
+set -euo pipefail
 
-REPO_URL="https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main"
+REPO_URL="${REPO_URL:-https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main}"
 PROJECT_PATH="$(pwd)"
+install_copilot=false
+install_claude=false
+install_antigravity=false
+install_codex=false
+
+normalize_choice() {
+  local normalized="${1,,}"
+  case "$normalized" in
+    1|copilot|github-copilot|vscode) echo "1" ;;
+    2|claude|claude-code) echo "2" ;;
+    3|antigravity|google-antigravity) echo "3" ;;
+    4|codex|openai-codex) echo "4" ;;
+    5|all) echo "5" ;;
+    *) echo "" ;;
+  esac
+}
 
 echo "AI Dev Rules 셋업을 시작합니다..."
 echo "대상 프로젝트: $PROJECT_PATH"
 
 # --- 0. AI 도구 선택 ---
-echo "========================================"
-echo "어떤 AI 개발 도구를 사용하시겠습니까?"
-echo "1. VS Code (GitHub Copilot)"
-echo "2. Claude Code"
-echo "3. Google Antigravity"
-echo "4. OpenAI Codex"
-echo "5. 모두 설치"
-echo "========================================"
-read -r -p "번호를 선택하세요 (1-5): " choice
+choice=""
+
+if [[ -n "${AI_TOOL:-}" ]]; then
+  choice="$(normalize_choice "${AI_TOOL}")"
+  if [[ -z "$choice" ]]; then
+    echo "지원하지 않는 AI_TOOL 값입니다: ${AI_TOOL}" >&2
+    exit 1
+  fi
+else
+  echo "========================================"
+  echo "어떤 AI 개발 도구를 사용하시겠습니까?"
+  echo "1. VS Code (GitHub Copilot)"
+  echo "2. Claude Code"
+  echo "3. Google Antigravity"
+  echo "4. OpenAI Codex"
+  echo "5. 모두 설치"
+  echo "========================================"
+
+  if [[ -t 0 ]]; then
+    read -r -p "번호를 선택하세요 (1-5): " choice
+  else
+    echo "비대화형 모드에서는 AI_TOOL 환경 변수를 설정해야 합니다. 예: AI_TOOL=claude" >&2
+    exit 1
+  fi
+fi
 
 case "$choice" in
   1) install_copilot=true ;;
@@ -46,11 +78,21 @@ download_file() {
   mkdir -p "$dest_dir"
 
   local url="$REPO_URL/$remote_path"
-  if curl -fsSL "$url" -o "$local_path"; then
-    echo "✔ 다운로드 완료: $local_path"
-  else
-    echo "⚠ 다운로드 실패: $url"
-  fi
+  local attempt
+  for attempt in 1 2 3; do
+    if curl -fsSL "$url" -o "$local_path"; then
+      if [[ "$local_path" == *.sh ]]; then
+        chmod +x "$local_path"
+      fi
+      echo "✔ 다운로드 완료: $local_path"
+      return 0
+    fi
+    echo "⚠ 다운로드 실패 (시도 $attempt/3): $url" >&2
+    sleep 1
+  done
+
+  echo "✖ 다운로드 최종 실패: $url" >&2
+  exit 1
 }
 
 # --- 2. .ai 폴더 및 핵심 규칙 다운로드 ---
@@ -73,6 +115,7 @@ rules=(
   "security/security-guide.md"
   "testing/testing-guide.md"
   "workflow/harness-engineering.md"
+  "workflow/long-running-guide.md"
   "workflow/spec-workflow.md"
   "workflow/team-workflow.md"
 )
@@ -84,6 +127,7 @@ done
 # language rules
 download_file ".ai/rules/language/README.md" "$AI_DIR/rules/language/README.md"
 download_file ".ai/rules/language/_template.md" "$AI_DIR/rules/language/_template.md"
+download_file ".ai/rules/language/typescript.md" "$AI_DIR/rules/language/typescript.md"
 
 # skills
 download_file ".ai/skills/README.md" "$AI_DIR/skills/README.md"
@@ -95,6 +139,13 @@ download_file ".ai/skills/harness/templates/research-content-starter.md" "$AI_DI
 download_file ".ai/skills/harness/references/pattern-selection.md" "$AI_DIR/skills/harness/references/pattern-selection.md"
 download_file ".ai/skills/harness/references/output-contract.md" "$AI_DIR/skills/harness/references/output-contract.md"
 download_file ".ai/skills/harness/references/harness-100-template-pack.md" "$AI_DIR/skills/harness/references/harness-100-template-pack.md"
+
+# scripts
+download_file "scripts/apply-hooks.sh" "$PROJECT_PATH/scripts/apply-hooks.sh"
+download_file "scripts/apply-hooks.py" "$PROJECT_PATH/scripts/apply-hooks.py"
+download_file "scripts/generate-hooks.sh" "$PROJECT_PATH/scripts/generate-hooks.sh"
+download_file "scripts/generate-hooks.py" "$PROJECT_PATH/scripts/generate-hooks.py"
+download_file "scripts/hooks_common.py" "$PROJECT_PATH/scripts/hooks_common.py"
 
 # entry-points (managed templates — always overwritten for updates)
 entry_points=(

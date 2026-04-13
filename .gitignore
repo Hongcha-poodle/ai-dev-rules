@@ -1,0 +1,4 @@
+.claude/settings.local.json
+_workspace/
+*.swp
+.DS_Store

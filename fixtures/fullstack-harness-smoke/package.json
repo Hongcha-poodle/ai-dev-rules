@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "lint": "node -e \"console.log('lint ok')\"",
-    "typecheck": "node -e \"console.log('typecheck ok')\"",
-    "test": "node -e \"console.log('unit ok')\"",
-    "test:integration": "node -e \"console.log('integration ok')\"",
-    "test:e2e": "node -e \"console.log('e2e ok')\"",
-    "build": "node -e \"console.log('build ok')\""
+    "lint": "node -e \"const fs=require('fs'); const path=require('path'); const root=process.cwd(); const files=[]; const visit=(dir)=>{ for (const entry of fs.readdirSync(dir,{withFileTypes:true})) { const target=path.join(dir, entry.name); if (entry.isDirectory()) visit(target); else if (target.endsWith('.json')) files.push(target); } }; visit(root); for (const file of files) JSON.parse(fs.readFileSync(file,'utf8')); console.log('json syntax ok:', files.length);\"",
+    "typecheck": "node -e \"const fs=require('fs'); const required=['AGENTS.md','CLAUDE.md','docs/index.md','docs/harness/overview.md','docs/harness/commands.md','docs/harness/validation.md','docs/plans/active/harness-bootstrap.md','.claude/agents/architect.md','.claude/agents/frontend-dev.md','.claude/agents/backend-dev.md','.claude/agents/qa-engineer.md','.claude/agents/release-engineer.md','.claude/skills/streamboard-harness/skill.md','.claude/skills/ui-verification/skill.md','_workspace/.gitkeep']; const missing=required.filter((file)=>!fs.existsSync(file)); if(missing.length){console.error('missing files:', missing.join(', ')); process.exit(1);} console.log('required harness files ok:', required.length);\"",
+    "test": "npm run lint && npm run typecheck && npm run test:integration && npm run test:e2e && npm run build",
+    "test:integration": "node -e \"const fs=require('fs'); const text=fs.readFileSync('docs/harness/commands.md','utf8'); ['npm run lint','npm run typecheck','npm run test','npm run test:integration','npm run test:e2e','npm run build'].forEach((cmd)=>{ if(!text.includes(cmd)){ throw new Error('missing command '+cmd); } }); console.log('verification contract commands ok');\"",
+    "test:e2e": "node -e \"const fs=require('fs'); const agents=fs.readFileSync('.claude/skills/streamboard-harness/skill.md','utf8'); const claude=fs.readFileSync('CLAUDE.md','utf8'); const codex=fs.readFileSync('AGENTS.md','utf8'); if(!claude.includes('docs/harness/overview.md')) throw new Error('CLAUDE.md missing overview pointer'); if(!codex.includes('docs/harness/commands.md')) throw new Error('AGENTS.md missing commands pointer'); if(!agents.includes('qa-engineer')) throw new Error('skill missing qa-engineer routing'); console.log('entrypoint discoverability ok');\"",
+    "build": "node -e \"const fs=require('fs'); const plan=fs.readFileSync('docs/plans/active/harness-bootstrap.md','utf8'); if(!plan.includes('structured logs') || !plan.includes('browser verification')) throw new Error('build readiness follow-ups missing'); console.log('harness build-readiness notes ok');\""
   }
 }

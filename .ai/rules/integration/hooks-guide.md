@@ -201,6 +201,10 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
 
 - `quality.yaml` → defines thresholds (errors: 0, coverage_min: 80)
 - `hooks` → enforces thresholds automatically
+- `scripts/generate-hooks.sh` → materializes `hooks_intent` into a starter `.claude/settings.json`
+- `scripts/apply-hooks.sh` → merges generated hooks into an existing `.claude/settings.json`
+- On Windows / PowerShell, invoke `scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json`
+- On Windows / PowerShell, merge with `scripts/apply-hooks.py .ai/config/quality.yaml .claude/settings.json`
 
 ```json
 {

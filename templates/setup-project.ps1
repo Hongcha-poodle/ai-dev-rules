@@ -4,22 +4,48 @@
 # 사용법:
 #   Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 
-$RepoUrl = "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main"
+$ErrorActionPreference = "Stop"
+$RepoUrl = if ($env:REPO_URL) { $env:REPO_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main" }
 $ProjectPath = $PWD.Path
 
 Write-Host "AI Dev Rules 셋업을 시작합니다..."
 Write-Host "대상 프로젝트: $ProjectPath"
 
 # --- 0. AI 도구 선택 ---
-Write-Host "========================================"
-Write-Host "어떤 AI 개발 도구를 사용하시겠습니까?"
-Write-Host "1. VS Code (GitHub Copilot)"
-Write-Host "2. Claude Code"
-Write-Host "3. Google Antigravity"
-Write-Host "4. OpenAI Codex"
-Write-Host "5. 모두 설치"
-Write-Host "========================================"
-$choice = Read-Host "번호를 선택하세요 (1-5)"
+function Normalize-Choice {
+    param([string]$Value)
+
+    if (-not $Value) {
+        return ""
+    }
+
+    switch ($Value.ToLowerInvariant()) {
+        { $_ -in @("1", "copilot", "github-copilot", "vscode") } { return "1" }
+        { $_ -in @("2", "claude", "claude-code") } { return "2" }
+        { $_ -in @("3", "antigravity", "google-antigravity") } { return "3" }
+        { $_ -in @("4", "codex", "openai-codex") } { return "4" }
+        { $_ -in @("5", "all") } { return "5" }
+        default { return "" }
+    }
+}
+
+if ($env:AI_TOOL) {
+    $choice = Normalize-Choice $env:AI_TOOL
+    if (-not $choice) {
+        Write-Error "지원하지 않는 AI_TOOL 값입니다: $($env:AI_TOOL)"
+        exit 1
+    }
+} else {
+    Write-Host "========================================"
+    Write-Host "어떤 AI 개발 도구를 사용하시겠습니까?"
+    Write-Host "1. VS Code (GitHub Copilot)"
+    Write-Host "2. Claude Code"
+    Write-Host "3. Google Antigravity"
+    Write-Host "4. OpenAI Codex"
+    Write-Host "5. 모두 설치"
+    Write-Host "========================================"
+    $choice = Read-Host "번호를 선택하세요 (1-5)"
+}
 
 $installCopilot = ($choice -eq '1' -or $choice -eq '5')
 $installClaude = ($choice -eq '2' -or $choice -eq '5')
@@ -41,11 +67,19 @@ function Download-File {
     }
 
     $Url = "$RepoUrl/$RemotePath"
-    try {
-        Invoke-RestMethod -Uri $Url -OutFile $LocalPath
-        Write-Host "✔ 다운로드 완료: $LocalPath"
-    } catch {
-        Write-Warning "다운로드 실패: $Url"
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            Invoke-RestMethod -Uri $Url -OutFile $LocalPath
+            Write-Host "✔ 다운로드 완료: $LocalPath"
+            return
+        } catch {
+            if ($attempt -eq 3) {
+                Write-Error "다운로드 최종 실패: $Url"
+                exit 1
+            }
+            Write-Warning "다운로드 실패 (시도 ${attempt}/3): $Url"
+            Start-Sleep -Seconds 1
+        }
     }
 }
 
@@ -70,6 +104,7 @@ $rules = @(
     "security/security-guide.md",
     "testing/testing-guide.md",
     "workflow/harness-engineering.md",
+    "workflow/long-running-guide.md",
     "workflow/spec-workflow.md",
     "workflow/team-workflow.md"
 )
@@ -81,6 +116,7 @@ foreach ($rule in $rules) {
 # language rules
 Download-File -RemotePath ".ai/rules/language/README.md" -LocalPath (Join-Path $DestAiDir "rules\language\README.md")
 Download-File -RemotePath ".ai/rules/language/_template.md" -LocalPath (Join-Path $DestAiDir "rules\language\_template.md")
+Download-File -RemotePath ".ai/rules/language/typescript.md" -LocalPath (Join-Path $DestAiDir "rules\language\typescript.md")
 
 # skills
 Download-File -RemotePath ".ai/skills/README.md" -LocalPath (Join-Path $DestAiDir "skills\README.md")
@@ -92,6 +128,13 @@ Download-File -RemotePath ".ai/skills/harness/templates/research-content-starter
 Download-File -RemotePath ".ai/skills/harness/references/pattern-selection.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\pattern-selection.md")
 Download-File -RemotePath ".ai/skills/harness/references/output-contract.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\output-contract.md")
 Download-File -RemotePath ".ai/skills/harness/references/harness-100-template-pack.md" -LocalPath (Join-Path $DestAiDir "skills\harness\references\harness-100-template-pack.md")
+
+# scripts
+Download-File -RemotePath "scripts/apply-hooks.sh" -LocalPath (Join-Path $ProjectPath "scripts\apply-hooks.sh")
+Download-File -RemotePath "scripts/apply-hooks.py" -LocalPath (Join-Path $ProjectPath "scripts\apply-hooks.py")
+Download-File -RemotePath "scripts/generate-hooks.sh" -LocalPath (Join-Path $ProjectPath "scripts\generate-hooks.sh")
+Download-File -RemotePath "scripts/generate-hooks.py" -LocalPath (Join-Path $ProjectPath "scripts\generate-hooks.py")
+Download-File -RemotePath "scripts/hooks_common.py" -LocalPath (Join-Path $ProjectPath "scripts\hooks_common.py")
 
 # entry-points (managed templates — always overwritten for updates)
 $entryPoints = @(

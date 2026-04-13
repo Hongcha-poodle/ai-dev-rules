@@ -11,9 +11,13 @@ Before executing any task, you MUST read and strictly adhere to the global AI ru
 - Architecture decisions → `.ai/rules/architecture/architecture-guide.md`
 - Security review → `.ai/rules/security/security-guide.md`
 - Test writing → `.ai/rules/testing/testing-guide.md`
-- Workflow → `.ai/rules/workflow/harness-engineering.md`
-- Team workflow → `.ai/rules/workflow/team-workflow.md`
+- Agent/skill authoring → `.ai/rules/development/agent-authoring.md`
+- Harness engineering / repo operating model → `.ai/rules/workflow/harness-engineering.md`
+- Spec workflow → `.ai/rules/workflow/spec-workflow.md`
+- Long-running / multi-session tasks → `.ai/rules/workflow/long-running-guide.md`
+- Team execution → `.ai/rules/workflow/team-workflow.md`
 - Harness bootstrap requests like `하네스 구성해`, `하네스 설치해`, `하네스 세팅해`, `하네스 셋팅해` → `.ai/skills/harness/SKILL.md`
+- Language rules → `.ai/rules/language/{lang}.md`
 
 ## Repository System of Record
 - `docs/index.md` is the starting map for durable project knowledge

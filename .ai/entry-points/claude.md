@@ -9,8 +9,11 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 - Architecture decisions → `.ai/rules/architecture/architecture-guide.md`
 - Security review → `.ai/rules/security/security-guide.md`
 - Test writing → `.ai/rules/testing/testing-guide.md`
+- Agent/skill authoring → `.ai/rules/development/agent-authoring.md`
 - Harness engineering / repo operating model → `.ai/rules/workflow/harness-engineering.md`
+- Spec workflow → `.ai/rules/workflow/spec-workflow.md`
 - Long-running / multi-session tasks → `.ai/rules/workflow/long-running-guide.md`
+- Team execution → `.ai/rules/workflow/team-workflow.md`
 - MCP integration → `.ai/rules/integration/mcp-integration.md`
 - Hooks setup → `.ai/rules/integration/hooks-guide.md`
 - Harness bootstrap requests like `하네스 구성해`, `하네스 설치해`, `하네스 세팅해`, `하네스 셋팅해` → `.ai/skills/harness/SKILL.md`
@@ -23,6 +26,10 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 
 ## Recommended Hooks (.claude/settings.json)
 See `.ai/rules/integration/hooks-guide.md` for hook configuration examples.
+Generate a starter config from `.ai/config/quality.yaml` with `scripts/generate-hooks.sh > .claude/settings.json`.
+Apply or merge generated hooks into an existing config with `scripts/apply-hooks.sh .ai/config/quality.yaml .claude/settings.json`.
+On Windows / PowerShell, use `python scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json`.
+On Windows / PowerShell, merge hooks with `python scripts/apply-hooks.py .ai/config/quality.yaml .claude/settings.json`.
 Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
 
 ## Harness Bootstrap

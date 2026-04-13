@@ -1,0 +1,90 @@
+name: Validate Rules
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install YAML dependency
+        run: python3 -m pip install --disable-pip-version-check pyyaml
+
+      - name: Validate cross-references
+        run: bash scripts/validate-references.sh
+
+      - name: Validate YAML
+        run: python3 -c "import yaml; yaml.safe_load(open('.ai/config/quality.yaml', encoding='utf-8'))"
+
+      - name: Validate shell scripts
+        run: |
+          bash -n templates/setup-project.sh
+          bash -n scripts/apply-hooks.sh
+          bash -n scripts/validate-references.sh
+          bash -n scripts/generate-hooks.sh
+          bash -n fixtures/fullstack-harness-smoke/scripts/validate-harness.sh
+
+      - name: Validate generated hooks JSON
+        run: |
+          bash scripts/generate-hooks.sh > /tmp/generated-hooks.json
+          python3 -c "import json; json.load(open('/tmp/generated-hooks.json', encoding='utf-8'))"
+
+      - name: Validate hook merge
+        run: |
+          mkdir -p /tmp/claude
+          printf '{\n  "model": "test-model",\n  "permissions": {\n    "allow": ["Bash(existing *)"]\n  }\n}\n' > /tmp/claude/settings.json
+          python3 scripts/apply-hooks.py .ai/config/quality.yaml /tmp/claude/settings.json
+          python3 - <<'PY'
+import json
+settings = json.load(open('/tmp/claude/settings.json', encoding='utf-8'))
+assert settings['model'] == 'test-model'
+assert 'Bash(existing *)' in settings['permissions']['allow']
+assert 'PostToolUse' in settings['hooks']
+assert 'PreToolUse' in settings['hooks']
+assert 'Stop' in settings['hooks']
+PY
+
+      - name: Validate fixture harness
+        working-directory: fixtures/fullstack-harness-smoke
+        run: |
+          bash scripts/validate-harness.sh
+          npm test
+
+  installer-smoke:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Smoke test installer
+        run: node scripts/smoke-installers.js

@@ -1,8 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\(''c:/Users/Rich/Desktop/ai-dev-rules/.ai/config/quality.yaml''\\)\\)\")",
-      "Bash(bash -n \"c:\\\\Users\\\\Rich\\\\Desktop\\\\ai-dev-rules\\\\templates\\\\setup-project.sh\")"
+      "Bash(python3 -c \"import yaml; yaml.safe_load(open('.ai/config/quality.yaml'))\")",
+      "Bash(bash -n templates/setup-project.sh)",
+      "Bash(bash scripts/validate-references.sh)",
+      "Bash(bash scripts/generate-hooks.sh *)"
     ]
   }
 }
