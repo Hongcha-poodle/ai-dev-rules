@@ -5,7 +5,7 @@
 # 사용법:
 #   bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
 
-set -e
+set -euo pipefail
 
 REPO_URL="https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main"
 PROJECT_PATH="$(pwd)"
@@ -49,7 +49,8 @@ download_file() {
   if curl -fsSL "$url" -o "$local_path"; then
     echo "✔ 다운로드 완료: $local_path"
   else
-    echo "⚠ 다운로드 실패: $url"
+    echo "⚠ 다운로드 실패: $url" >&2
+    exit 1
   fi
 }
 

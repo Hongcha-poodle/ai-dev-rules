@@ -4,6 +4,8 @@
 # 사용법:
 #   Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 
+$ErrorActionPreference = 'Stop'
+
 $RepoUrl = "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main"
 $ProjectPath = $PWD.Path
 
@@ -45,7 +47,7 @@ function Download-File {
         Invoke-RestMethod -Uri $Url -OutFile $LocalPath
         Write-Host "✔ 다운로드 완료: $LocalPath"
     } catch {
-        Write-Warning "다운로드 실패: $Url"
+        throw "다운로드 실패: $Url — $_"
     }
 }
 
