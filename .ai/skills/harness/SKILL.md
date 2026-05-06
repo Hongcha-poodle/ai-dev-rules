@@ -107,6 +107,23 @@
   - reviewer / evaluator separation exists for non-trivial work
 - Record remaining gaps and next iteration steps.
 
+### Phase 6. Reload the session so the new harness takes effect
+- Claude Code loads `.claude/settings.json`, `.claude/agents/`, `.claude/skills/`,
+  and `CLAUDE.md` only at session start. After generating or modifying any of
+  those, instruct the user to reload before verifying:
+  - `/exit` — leave the current session
+  - `claude --resume` (or `cc --resume`) — pick the session that just ended so
+    the conversation context is preserved while the harness is re-read
+  - Trigger one of the newly added skills/agents to confirm it actually loads
+- On-demand rules under `.ai/rules/*.md` are re-read each time `Read` is called,
+  so they do NOT require a reload — only Claude-managed harness files do.
+- For Codex / Copilot / Antigravity, document the equivalent reload step (or
+  note that those tools re-read entrypoints per request) instead of copying the
+  Claude Code instructions.
+- When post-bootstrap verification fails ("the new skill isn't triggering",
+  "hooks didn't run"), check session reload first before debugging the
+  artifacts.
+
 ## Usage
 - `하네스 구성해. 이 프로젝트는 Next.js + Supabase 기반이고, UI 변경과 API 변경을 모두 검증할 수 있어야 해.`
 - `하네스 설치해. 이 프로젝트에서 Claude Code와 Codex가 반복 작업을 덜 헤매게 해줘.`
@@ -122,3 +139,4 @@
 - Do not stop at architecture prose; produce repo artifacts that future runs can reuse.
 - Do not cargo-cult a full harness-100 package into a project. Distill the pattern, then adapt it to the project's actual stack and scope.
 - For bulky examples and decision guides, load `references/` files only when needed.
+- Always remind the user to reload the Claude Code session (`/exit` → `claude --resume`) after producing or modifying `.claude/` artifacts or `CLAUDE.md`; otherwise the new harness will not be active in the current session.
