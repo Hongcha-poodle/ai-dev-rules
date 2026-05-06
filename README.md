@@ -100,6 +100,17 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 > 이미 존재하는 진입점 파일은 덮어쓰지 않습니다. 하지만 관리 영역(`.ai/entry-points/`)은 항상 최신으로 업데이트됩니다.
 
+### Claude Code 사용자: 셋업/하네스 변경 후 세션 리로드
+
+`.claude/settings.json`, `.claude/agents/`, `.claude/skills/`, `CLAUDE.md`는 **세션 시작 시점에만 1회 로드**됩니다. 셋업 스크립트나 `하네스 구성해`로 이 파일들을 새로 만들거나 수정했다면, 현재 세션은 여전히 옛 harness를 사용합니다. 새 harness를 활성화하려면:
+
+1. `/exit` — 현재 세션 종료
+2. `claude --resume` (또는 `cc --resume`) — 같은 대화 컨텍스트 유지
+3. 방금 종료한 세션 선택
+4. 새로 추가된 skill/agent를 한 번 호출해 동작 확인
+
+`.ai/rules/*.md` 같은 on-demand 규칙은 매번 새로 읽히므로 리로드가 필요 없습니다. 이 절차는 Claude Code에만 해당하며, Codex/Copilot/Antigravity는 진입점을 요청마다 다시 읽습니다.
+
 ## Harness 엔지니어링 관점의 권장 운영 방식
 
 - **진입점은 짧은 map으로 유지** — `AGENTS.md`, `CLAUDE.md` 등은 라우팅 역할만 하고, 상세 지식은 `docs/`와 `.ai/rules/`에 기록합니다.

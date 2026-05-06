@@ -314,3 +314,4 @@ Path syntax:
 - [ ] Hook commands execute within 5 seconds?
 - [ ] Permissions aligned with hooks?
 - [ ] `settings.local.json` in `.gitignore`?
+- [ ] After editing `settings.json`, reloaded the session (`/exit` → `claude --resume`)? Hooks are read at session start only.
