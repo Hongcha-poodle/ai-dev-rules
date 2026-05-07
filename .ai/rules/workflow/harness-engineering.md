@@ -39,6 +39,7 @@ Repository operating model for agent-first software development.
 - Agents copy existing patterns, including bad ones.
 - Encode golden paths in shared utilities, typed boundaries, templates, and docs.
 - Run recurring cleanup for drift, duplicated patterns, dead abstractions, and low-signal docs.
+- Include referenced-path checks so entrypoints and docs do not point at files that no longer exist.
 
 ## Recommended Repo Shape
 
@@ -131,7 +132,8 @@ Opus 4.6:    Context resets removable, sprint decomposition removable, planner+e
 4. Queryable logs/metrics/traces or lightweight local observability
 5. Deterministic fixtures, smoke tests, and browser automation
 6. Loop detection and pre-completion self-check hooks
-7. Cleanup jobs or recurring agent tasks for drift reduction
+7. Referenced-path audit such as `scripts/harness-audit.py`
+8. Cleanup jobs or recurring agent tasks for drift reduction
 
 ## Checklist
 - [ ] Is durable knowledge recorded in repo files instead of chat history?
@@ -139,6 +141,7 @@ Opus 4.6:    Context resets removable, sprint decomposition removable, planner+e
 - [ ] Can agents verify the changed behavior directly?
 - [ ] Is autonomy level appropriate to current reliability?
 - [ ] Does the repo contain golden paths that reduce drift?
+- [ ] Do entrypoints and docs reference files that actually exist?
 - [ ] Is there a cleanup loop for entropy and AI slop?
 - [ ] Are architectural constraints enforced mechanically (structural tests, linters)?
 - [ ] Is loop detection in place to break doom loops?

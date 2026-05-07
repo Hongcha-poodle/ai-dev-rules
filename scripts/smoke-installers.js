@@ -157,8 +157,9 @@ async function detectPythonCommand() {
           ["python"],
           ["py", "-3"],
           ["py"],
+          ["uv", "--cache-dir", ".uv-cache", "run", "python"],
         ]
-      : [["python3"], ["python"]];
+      : [["python3"], ["python"], ["uv", "--cache-dir", ".uv-cache", "run", "python"]];
 
   for (const [command, ...args] of candidates) {
     try {
@@ -236,6 +237,8 @@ async function smokeInstalledProject(projectDir) {
     ".ai/skills/harness/SKILL.md",
     "scripts/generate-hooks.sh",
     "scripts/generate-hooks.py",
+    "scripts/harness-audit.py",
+    "scripts/hook-runner.mjs",
     "CLAUDE.md",
     "AGENTS.md",
     ".github/copilot-instructions.md",
@@ -247,13 +250,33 @@ async function smokeInstalledProject(projectDir) {
   requireText(projectDir, "CLAUDE.md", "Project Specific Instructions");
   requireText(projectDir, "AGENTS.md", "## Project Map");
   requireText(projectDir, ".ai/entry-points/codex.md", "## Harness Load Timing");
-  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Reload the session so the new harness takes effect");
-  requireText(projectDir, ".ai/skills/harness/SKILL.md", "For Codex / Copilot / Antigravity");
+  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Decide whether the client must reload");
+  requireText(projectDir, ".ai/skills/harness/SKILL.md", "Claude-managed artifact 없음, reload 불필요");
+  requireText(projectDir, ".ai/entry-points/claude.md", "py -3 scripts/generate-hooks.py");
 
   const pythonCommand = await detectPythonCommand();
   const settingsPath = path.join(projectDir, ".claude/settings.json");
   if (pythonCommand) {
     fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+    fs.writeFileSync(
+      path.join(projectDir, "package.json"),
+      JSON.stringify(
+        {
+          private: true,
+          scripts: {
+            lint: "eslint .",
+            typecheck: "tsc --noEmit",
+            test: "vitest",
+          },
+          devDependencies: {
+            vitest: "latest",
+          },
+        },
+        null,
+        2
+      ) + "\n",
+      "utf-8"
+    );
     fs.writeFileSync(
       settingsPath,
       JSON.stringify(
@@ -286,6 +309,19 @@ async function smokeInstalledProject(projectDir) {
     if (!generated.permissions?.allow?.includes("Bash(custom-existing-command *)")) {
       throw new Error("Existing permissions were not preserved during hook merge.");
     }
+    const hookCommands = JSON.stringify(generated.hooks);
+    if (!hookCommands.includes("node scripts/hook-runner.mjs")) {
+      throw new Error("Generated hooks should use the portable hook runner.");
+    }
+    if (!hookCommands.includes("post-edit impacted-tests vitest")) {
+      throw new Error("Vitest package.json detection did not generate a vitest related-test hook.");
+    }
+    if (hookCommands.includes("--findRelatedTests")) {
+      throw new Error("Vitest projects must not generate Jest --findRelatedTests commands.");
+    }
+    await run(pythonCommand[0], [...pythonCommand.slice(1), "scripts/harness-audit.py"], {
+      cwd: projectDir,
+    });
   } else {
     console.warn("Skipping hook merge runtime check: no usable Python interpreter was found.");
   }
@@ -301,7 +337,7 @@ function smokeCodexOnlyProject(projectDir) {
   requirePath(projectDir, "AGENTS.md");
   requireText(projectDir, "AGENTS.md", "## Project Map");
   requireText(projectDir, ".ai/entry-points/codex.md", "## Harness Load Timing");
-  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Reload the session so the new harness takes effect");
+  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Decide whether the client must reload");
 
   requireMissingPath(projectDir, "CLAUDE.md");
   requireMissingPath(projectDir, ".github/copilot-instructions.md");
@@ -322,7 +358,7 @@ function smokeThreeToolProject(projectDir) {
   requireText(projectDir, "AGENTS.md", "## Project Map");
   requireText(projectDir, ".agent/rules/rules.md", "Google Antigravity");
   requireText(projectDir, ".ai/entry-points/codex.md", "## Harness Load Timing");
-  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Reload the session so the new harness takes effect");
+  requireText(projectDir, ".ai/skills/harness/SKILL.md", "### Phase 6. Decide whether the client must reload");
 }
 
 function addThreeToolCustomMarkers(projectDir, marker) {

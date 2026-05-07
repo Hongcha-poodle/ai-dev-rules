@@ -22,7 +22,9 @@
 - [x] Add `.claude/agents/*`
 - [x] Add `.claude/skills/streamboard-harness/skill.md`
 - [ ] Add `.claude/settings.json` hooks for lint/typecheck/test
-- [ ] Add structured logs and browser verification command
+- [ ] Add structured logs
+- [ ] Replace `browser verification unavailable` with a real browser verification command
+- [ ] Add referenced-path audit to recurring harness checks
 
 ## Notes
 

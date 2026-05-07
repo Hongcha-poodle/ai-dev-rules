@@ -4,7 +4,15 @@
       "Bash(python3 -c \"import yaml; yaml.safe_load(open('.ai/config/quality.yaml'))\")",
       "Bash(bash -n templates/setup-project.sh)",
       "Bash(bash scripts/validate-references.sh)",
-      "Bash(bash scripts/generate-hooks.sh *)"
+      "Bash(bash scripts/generate-hooks.sh *)",
+      "Bash(node scripts/smoke-installers.js)",
+      "Bash(python scripts/validate-references.py)",
+      "Bash(py -3 scripts/validate-references.py)",
+      "PowerShell(py -3 scripts/validate-references.py 2>&1)",
+      "PowerShell(Get-Command python, python3, py -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command uv -ErrorAction SilentlyContinue)",
+      "PowerShell(uv --version 2>&1)",
+      "PowerShell(uv --cache-dir .uv-cache run python scripts/validate-references.py 2>&1)"
     ]
   }
 }

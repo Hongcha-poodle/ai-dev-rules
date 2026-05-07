@@ -92,6 +92,7 @@ Remove-Item Env:AI_TOOL -ErrorAction SilentlyContinue
 1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 단일/복수 선택 또는 전체 설치
 2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `entry-points/` 관리 템플릿, `skills/README.md`
    - 포함 스킬: `harness` (`하네스 구성해`, `build a harness for this project` 요청용)
+   - 포함 스크립트: `scripts/generate-hooks.py`, `scripts/apply-hooks.py`, `scripts/hook-runner.mjs`, `scripts/harness-audit.py`
 3. **`docs/` 권장 구조 생성** — 아래 표준 디렉토리와 기본 파일을 생성합니다:
    ```
    docs/
@@ -148,6 +149,7 @@ Remove-Item Env:AI_TOOL -ErrorAction SilentlyContinue
   - `build a harness for this project`
 - 스킬이 수행하는 일:
   - 현재 프로젝트의 entrypoint, `docs/`, 검증 명령, hook/automation 가능성을 감사
+  - entrypoint/docs 안의 backtick path가 실제 파일을 가리키는지 `scripts/harness-audit.py`로 검사
   - 작업 성격에 맞는 orchestration pattern 선택
   - tool/environment에 맞는 harness 산출물 생성
   - verification surface와 cleanup loop까지 포함한 validation plan 작성
@@ -158,6 +160,8 @@ Remove-Item Env:AI_TOOL -ErrorAction SilentlyContinue
   - `fullstack-app-starter`
   - `code-review-starter`
   - `research-content-starter`
+- Claude Code hook generator는 JavaScript repo에서 `vitest`와 `jest`를 감지해 impacted test command를 분기하고, shell one-liner 대신 `node scripts/hook-runner.mjs ...`를 사용합니다.
+- Windows에서 hook generation을 실행할 때는 `python` alias보다 `py -3 scripts/generate-hooks.py ...` 또는 `uv run python scripts/generate-hooks.py ...`를 우선 사용하세요.
 
 ## Dry-Run Fixture
 

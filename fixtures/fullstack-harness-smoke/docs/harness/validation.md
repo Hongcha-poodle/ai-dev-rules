@@ -22,10 +22,12 @@ Prompt:
 - QA/reviewer path is separate
 - Release-readiness ownership exists
 - `_workspace/` convention is documented
+- Missing browser automation is recorded as a known gap
 
 ## Remaining TODOs For A Real Project
 
 - Add `.claude/settings.json` hooks
-- Wire browser automation command
+- browser verification unavailable: wire Playwright or another browser smoke command such as `npm run smoke:browser`
 - Add structured log query examples
 - Add rollback checklist for deploys
+- Run a referenced-path check during harness audit

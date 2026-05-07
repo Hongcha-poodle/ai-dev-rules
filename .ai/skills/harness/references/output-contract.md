@@ -30,6 +30,7 @@ When building a project harness, the result should leave behind reusable repo ar
   - unit/integration/smoke/e2e
   - build or deploy-readiness checks
 - If commands are missing, write TODOs and recommended additions instead of guessing.
+- For browser verification, either record a real command such as `npm run smoke:browser` or explicitly write `browser verification unavailable` in `docs/harness/validation.md`.
 
 ### 4. Review separation
 - Define who builds and who verifies.
@@ -42,6 +43,10 @@ When building a project harness, the result should leave behind reusable repo ar
   - doc-gardening task
   - quality review reminder in `docs/plans/`
 - The harness should explain how bad patterns are detected and cleaned up over time.
+- Add or run a referenced-path check:
+  - Prefer `scripts/harness-audit.py` when available.
+  - Scan entrypoints and docs for backtick path references.
+  - Report missing paths instead of allowing stale pointers such as `lib/content-data.ts`.
 
 ## Claude Code Specific Outputs
 
@@ -59,3 +64,4 @@ Use these only when they match the project's actual toolchain and permission mod
 - Can the agent run or at least locate verification commands?
 - Is there a separate verification path?
 - Is there a clear next step for missing observability, fixtures, or browser automation?
+- Do referenced paths in entrypoints and harness docs exist?

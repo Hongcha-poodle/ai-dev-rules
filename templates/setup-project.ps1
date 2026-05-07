@@ -162,6 +162,8 @@ Download-File -RemotePath "scripts/apply-hooks.sh" -LocalPath (Join-Path $Projec
 Download-File -RemotePath "scripts/apply-hooks.py" -LocalPath (Join-Path $ProjectPath "scripts\apply-hooks.py")
 Download-File -RemotePath "scripts/generate-hooks.sh" -LocalPath (Join-Path $ProjectPath "scripts\generate-hooks.sh")
 Download-File -RemotePath "scripts/generate-hooks.py" -LocalPath (Join-Path $ProjectPath "scripts\generate-hooks.py")
+Download-File -RemotePath "scripts/harness-audit.py" -LocalPath (Join-Path $ProjectPath "scripts\harness-audit.py")
+Download-File -RemotePath "scripts/hook-runner.mjs" -LocalPath (Join-Path $ProjectPath "scripts\hook-runner.mjs")
 Download-File -RemotePath "scripts/hooks_common.py" -LocalPath (Join-Path $ProjectPath "scripts\hooks_common.py")
 
 # entry-points (managed templates — always overwritten for updates)

@@ -64,7 +64,16 @@ Every hook entry requires a `hooks` array with `type` specified:
 
 ## Hook Input (stdin JSON)
 
-Hooks receive context via **stdin**, not environment variables. Parse with `jq`:
+Hooks receive context via **stdin**, not environment variables. Prefer parsing that JSON in a repo script instead of shell one-liners:
+
+```json
+{
+  "type": "command",
+  "command": "node scripts/hook-runner.mjs post-edit lint"
+}
+```
+
+The generated `scripts/hook-runner.mjs` reads stdin JSON directly, so hook commands do not need `cat`, `jq`, `grep`, `tail`, or shell redirection. The hook input shape is:
 
 ```json
 {
@@ -91,7 +100,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "npm run lint --fix 2>/dev/null || true"
+            "command": "node scripts/hook-runner.mjs post-edit lint"
           }
         ]
       }
@@ -110,7 +119,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsc --noEmit 2>&1 | head -20"
+            "command": "node scripts/hook-runner.mjs post-edit typecheck"
           }
         ]
       }
@@ -129,7 +138,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); echo \"$CMD\" | grep -qE '(rm -rf|git push --force|git reset --hard)' && echo 'BLOCK: destructive command' >&2 && exit 2 || exit 0"
+            "command": "node scripts/hook-runner.mjs pre-bash block-destructive"
           }
         ]
       }
@@ -148,7 +157,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== Quality Summary ===' && npm run lint 2>&1 | tail -5 && npm test 2>&1 | tail -10"
+            "command": "node scripts/hook-runner.mjs stop quality-summary"
           }
         ]
       }
@@ -158,6 +167,16 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
 ```
 
 ## Language-Specific Hooks
+
+`scripts/generate-hooks.py` chooses a profile from the repository surface:
+- `package.json` → JavaScript / TypeScript
+- `go.mod` → Go
+- `pyproject.toml`, `requirements.txt`, `setup.py`, or `tox.ini` → Python
+
+For JavaScript impacted tests, the generator inspects `package.json`:
+- `vitest` dependency or script → `node scripts/hook-runner.mjs post-edit impacted-tests vitest`, which runs `vitest related <file> --run`
+- `jest` dependency or script → `node scripts/hook-runner.mjs post-edit impacted-tests jest`, which runs `jest --findRelatedTests <file>` or the existing `npm test -- --findRelatedTests <file>` fallback
+- unknown runner → no impacted-test hook is generated; use the Stop quality summary or add a repository-specific command
 
 ### Go
 ```json
@@ -169,7 +188,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "gofmt -l . 2>/dev/null | head -5; go vet ./... 2>&1 | head -10"
+            "command": "node scripts/hook-runner.mjs post-edit lint"
           }
         ]
       }
@@ -188,7 +207,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "ruff check --fix . 2>/dev/null; mypy . --no-error-summary 2>&1 | head -10"
+            "command": "node scripts/hook-runner.mjs post-edit lint"
           }
         ]
       }
@@ -203,8 +222,9 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
 - `hooks` → enforces thresholds automatically
 - `scripts/generate-hooks.sh` → materializes `hooks_intent` into a starter `.claude/settings.json`
 - `scripts/apply-hooks.sh` → merges generated hooks into an existing `.claude/settings.json`
-- On Windows / PowerShell, invoke `scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json`
-- On Windows / PowerShell, merge with `scripts/apply-hooks.py .ai/config/quality.yaml .claude/settings.json`
+- On Windows / PowerShell, prefer `py -3 scripts/generate-hooks.py ...` when `py` exists
+- If the project uses `uv`, prefer `uv run python scripts/generate-hooks.py ...`
+- Otherwise install Python or skip hook generation
 
 ```json
 {
@@ -215,7 +235,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
         "hooks": [
           {
             "type": "command",
-            "command": "npm test -- --coverage 2>&1 | grep -E 'Statements|Branches|Functions|Lines' | head -4"
+            "command": "node scripts/hook-runner.mjs stop coverage-report"
           }
         ]
       }
@@ -226,7 +246,7 @@ Available env vars: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_ENV_FILE` (SessionStart only
 
 ## Loop Detection Hook
 
-Detect doom loops where the agent repeatedly edits the same file without progress. Track via a counter file:
+Detect loops where the agent repeatedly edits the same file without progress. Prefer adding a small action to `scripts/hook-runner.mjs` or another repo script so the counter logic remains portable. If you keep this as a shell one-liner, mark it POSIX-only and do not ship it as the default Windows hook template.
 
 ```json
 {
@@ -237,7 +257,7 @@ Detect doom loops where the agent repeatedly edits the same file without progres
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); HASH=$(printf '%s' \"$FILE\" | cksum | cut -d' ' -f1); COUNTER=\"/tmp/claude-edit-counter-$HASH\"; COUNT=$(cat \"$COUNTER\" 2>/dev/null || echo 0); COUNT=$((COUNT+1)); echo $COUNT > \"$COUNTER\"; if [ $COUNT -ge 4 ]; then echo \"LOOP DETECTED: $FILE edited $COUNT times. Stop and reassess approach.\" >&2; rm -f \"$COUNTER\"; fi"
+            "command": "node scripts/hook-runner.mjs post-edit loop-detect"
           }
         ]
       }
@@ -261,7 +281,7 @@ Run quality gates automatically before the agent finishes, surfacing failures as
         "hooks": [
           {
             "type": "command",
-            "command": "ERRORS=0; LINT=$(npm run lint 2>&1 | tail -5); if echo \"$LINT\" | grep -qiE 'error|warning'; then ERRORS=1; fi; TYPE=$(npx tsc --noEmit 2>&1 | tail -10); if echo \"$TYPE\" | grep -qiE 'error'; then ERRORS=1; fi; TEST=$(npm test 2>&1 | tail -10); if echo \"$TEST\" | grep -qiE 'fail'; then ERRORS=1; fi; echo \"=== Pre-Completion Check ===\"; echo \"$LINT\"; echo \"$TYPE\"; echo \"$TEST\"; if [ $ERRORS -eq 1 ]; then echo 'BLOCK: quality gates not passed — fix before completing' >&2; exit 2; fi; exit 0"
+            "command": "node scripts/hook-runner.mjs stop quality-summary"
           }
         ]
       }
@@ -270,9 +290,9 @@ Run quality gates automatically before the agent finishes, surfacing failures as
 }
 ```
 
-This hook **blocks completion** (exit 2) if lint, typecheck, or tests fail, forcing the agent to fix issues before finishing.
+Use a dedicated blocking action in the runner when you want this hook to block completion with exit code 2. The default generated quality summary is informational and does not block, preserving the previous `|| true` behavior.
 
-> **Note**: The example above uses npm/tsc commands. Adapt to your project's toolchain (e.g., `ruff check` + `mypy` + `pytest` for Python, `golangci-lint run` + `go test ./...` for Go). See Language-Specific Hooks above for per-language examples.
+> **Note**: Adapt blocking behavior to your project's toolchain and risk tolerance. See Language-Specific Hooks above for per-language examples.
 
 ## Permission Pairing
 
@@ -298,6 +318,22 @@ Path syntax:
 - `/path` — project root relative
 - `./path` or `path` — current directory relative
 
+## Troubleshooting
+
+### `spawn EPERM`
+- Usually means the hook command cannot be executed by the current OS/shell.
+- Prefer `node scripts/hook-runner.mjs ...` or another repo script over shell-specific one-liners.
+- Verify the executable is on PATH and, on Windows, avoid relying on broken `python.exe` aliases.
+
+### `/_error` warning during Next.js checks
+- Treat as a framework/build warning until a reproducible user-facing failure is observed.
+- Re-run the focused command once, then inspect build output and route-level errors if it persists.
+
+### `EBUSY: resource busy or locked, unlink '.next/export/404.html'`
+- On Windows this commonly means a dev server, watcher, editor extension, or Node process still holds a file lock.
+- Stop the dev server or related Node processes, retry the command once, and only investigate lock holders if it repeats.
+- If the retry passes and no source code changed, record it as transient file locking rather than a regression.
+
 ## Rules
 - **Only exit code 2 blocks** tool calls. Other non-zero codes log but proceed.
 - Matcher is a **regex** pattern (e.g., `Edit|Write`, `Bash`, `mcp__.*`).
@@ -310,6 +346,7 @@ Path syntax:
 - [ ] Lint/typecheck hooks configured for project language?
 - [ ] PreToolUse guard for destructive commands?
 - [ ] Hook commands use stdin JSON parsing (not $TOOL_INPUT)?
+- [ ] Hook commands use repo scripts rather than POSIX-only `jq`/`grep`/`tail` one-liners?
 - [ ] Blocking hooks use `exit 2` (not `exit 1`)?
 - [ ] Hook commands execute within 5 seconds?
 - [ ] Permissions aligned with hooks?

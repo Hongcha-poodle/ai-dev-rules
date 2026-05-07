@@ -43,6 +43,7 @@ require_text "docs/harness/commands.md" "npm run typecheck" "typecheck command"
 require_text "docs/harness/commands.md" "npm run test" "unit test command"
 require_text "docs/harness/commands.md" "npm run test:integration" "integration test command"
 require_text "docs/harness/commands.md" "npm run test:e2e" "e2e command"
+require_text "docs/harness/commands.md" "browser verification unavailable" "browser gap should be explicit"
 require_text "docs/harness/commands.md" "npm run build" "build command"
 
 # 4. Review separation
@@ -57,5 +58,6 @@ require_text ".claude/skills/streamboard-harness/skill.md" "Route verification t
 require_file "_workspace/.gitkeep"
 require_text "docs/plans/active/harness-bootstrap.md" "TODO" "bootstrap plan should keep remaining cleanup work visible"
 require_text "docs/harness/validation.md" "Remaining TODOs" "validation doc should capture drift follow-ups"
+require_text "docs/harness/validation.md" "browser verification unavailable" "validation doc should record browser known gap"
 
 echo "Harness fixture validation passed."

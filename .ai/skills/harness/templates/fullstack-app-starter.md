@@ -78,7 +78,7 @@ Optional when multi-phase artifacts matter:
 - logs/metrics/traces:
 
 ## Known Gaps
-- 
+- browser verification unavailable: TODO until Playwright or an equivalent browser smoke script exists
 ```
 
 ### `docs/harness/commands.md`
@@ -92,6 +92,7 @@ Optional when multi-phase artifacts matter:
 - Unit tests: `...`
 - Integration tests: `...`
 - Smoke / e2e: `...`
+- Browser smoke: `npm run smoke:browser` if Playwright or equivalent exists; otherwise record `browser verification unavailable`
 
 ## Release Readiness
 - Build: `...`
@@ -122,12 +123,14 @@ Optional when multi-phase artifacts matter:
 - [ ] Add or update harness docs
 - [ ] Define role ownership
 - [ ] Define validation flow
+- [ ] Record browser verification as real command or `browser verification unavailable`
 - [ ] Record remaining gaps
 ```
 
 ## Validation Checklist
 
 - Can UI work be verified via browser automation or screenshots?
+- If browser automation is unavailable, is `browser verification unavailable` recorded in `docs/harness/validation.md` as a known gap?
 - Can API changes be checked with repeatable commands?
 - Is there a separate QA/reviewer role?
 - Are release-readiness and rollback expectations recorded?

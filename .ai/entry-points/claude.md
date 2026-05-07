@@ -33,9 +33,13 @@ Additional rules are loaded **on demand** via `Read` tool when their trigger is 
 See `.ai/rules/integration/hooks-guide.md` for hook configuration examples.
 Generate a starter config from `.ai/config/quality.yaml` with `scripts/generate-hooks.sh > .claude/settings.json`.
 Apply or merge generated hooks into an existing config with `scripts/apply-hooks.sh .ai/config/quality.yaml .claude/settings.json`.
-On Windows / PowerShell, use `python scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json`.
-On Windows / PowerShell, merge hooks with `python scripts/apply-hooks.py .ai/config/quality.yaml .claude/settings.json`.
+On Windows / PowerShell, prefer an available Python launcher:
+- `py -3 scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json` when `py` exists
+- `uv run python scripts/generate-hooks.py .ai/config/quality.yaml .claude/settings.json` when the project uses `uv`
+- otherwise install Python or skip hook generation
+Use the same launcher for merging, e.g. `py -3 scripts/apply-hooks.py .ai/config/quality.yaml .claude/settings.json`.
 Configure `PostToolUse` hooks for automatic lint/type checking after file edits.
+Generated hooks call `node scripts/hook-runner.mjs ...` so stdin JSON parsing and output truncation stay portable across POSIX shells and PowerShell.
 
 ## Harness Bootstrap
 - If the user asks to build, install, set up, repair, or extend a harness, load `.ai/skills/harness/SKILL.md`.

@@ -172,6 +172,8 @@ download_file "scripts/apply-hooks.sh" "$PROJECT_PATH/scripts/apply-hooks.sh"
 download_file "scripts/apply-hooks.py" "$PROJECT_PATH/scripts/apply-hooks.py"
 download_file "scripts/generate-hooks.sh" "$PROJECT_PATH/scripts/generate-hooks.sh"
 download_file "scripts/generate-hooks.py" "$PROJECT_PATH/scripts/generate-hooks.py"
+download_file "scripts/harness-audit.py" "$PROJECT_PATH/scripts/harness-audit.py"
+download_file "scripts/hook-runner.mjs" "$PROJECT_PATH/scripts/hook-runner.mjs"
 download_file "scripts/hooks_common.py" "$PROJECT_PATH/scripts/hooks_common.py"
 
 # entry-points (managed templates — always overwritten for updates)

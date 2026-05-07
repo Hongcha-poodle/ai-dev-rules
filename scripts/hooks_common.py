@@ -46,56 +46,82 @@ def detect_language(repo_root: Path) -> str:
     return "generic"
 
 
-def command_profile(language: str) -> dict[str, str | list[str]]:
-    destructive = (
-        "INPUT=$(cat); "
-        "CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); "
-        "echo \"$CMD\" | grep -qE '(rm -rf|git push --force|git reset --hard)' "
-        "&& echo 'BLOCK: destructive command' >&2 && exit 2 || exit 0"
-    )
+def read_package_json(repo_root: Path) -> dict[str, Any]:
+    package_path = repo_root / "package.json"
+    if not package_path.exists():
+        return {}
+    try:
+        payload = json.loads(package_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def package_has(package_json: dict[str, Any], name: str) -> bool:
+    for key in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        values = package_json.get(key, {})
+        if isinstance(values, dict) and name in values:
+            return True
+    return False
+
+
+def detect_javascript_test_runner(repo_root: Path) -> str | None:
+    package_json = read_package_json(repo_root)
+    scripts = package_json.get("scripts", {})
+    scripts_text = " ".join(value for value in scripts.values() if isinstance(value, str)) if isinstance(scripts, dict) else ""
+
+    if package_has(package_json, "vitest") or re.search(r"(^|[^A-Za-z0-9_-])vitest([^A-Za-z0-9_-]|$)", scripts_text):
+        return "vitest"
+    if package_has(package_json, "jest") or re.search(r"(^|[^A-Za-z0-9_-])jest([^A-Za-z0-9_-]|$)", scripts_text):
+        return "jest"
+    return None
+
+
+def hook_runner(*args: str) -> str:
+    return " ".join(["node", "scripts/hook-runner.mjs", *args])
+
+
+def command_profile(language: str, repo_root: Path) -> dict[str, str | list[str] | None]:
+    javascript_test_runner = detect_javascript_test_runner(repo_root) if language == "javascript" else None
 
     common = {
-        "block_destructive": destructive,
-        "delivery_summary": "echo 'Delivery summary: verify smoke checks, rollback plan, and observability notes for risky changes.'",
-        "harness_summary": "echo 'Harness summary: confirm docs/index.md, docs/harness/, and cleanup loop remain current.'",
+        "block_destructive": hook_runner("pre-bash", "block-destructive"),
+        "delivery_summary": hook_runner("stop", "delivery-summary"),
+        "harness_summary": hook_runner("stop", "harness-summary"),
     }
 
     if language == "javascript":
+        impacted_tests = (
+            hook_runner("post-edit", "impacted-tests", javascript_test_runner)
+            if javascript_test_runner
+            else None
+        )
         return common | {
-            "lint": "npm run lint 2>&1 | tail -20 || true",
-            "typecheck": "npm run typecheck 2>&1 | tail -20 || npx tsc --noEmit 2>&1 | tail -20 || true",
-            "impacted_tests": (
-                "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); "
-                "if [ -n \"$FILE\" ]; then npm test -- --findRelatedTests \"$FILE\" 2>&1 | tail -20 || true; fi"
-            ),
-            "quality_summary": (
-                "echo '=== Quality Summary ==='; "
-                "npm run lint 2>&1 | tail -10 || true; "
-                "npm run typecheck 2>&1 | tail -10 || npx tsc --noEmit 2>&1 | tail -10 || true; "
-                "npm test 2>&1 | tail -10 || true"
-            ),
-            "coverage_report": "npm test -- --coverage 2>&1 | grep -E 'Statements|Branches|Functions|Lines' | head -4 || true",
+            "lint": hook_runner("post-edit", "lint"),
+            "typecheck": hook_runner("post-edit", "typecheck"),
+            "impacted_tests": impacted_tests,
+            "quality_summary": hook_runner("stop", "quality-summary"),
+            "coverage_report": hook_runner("stop", "coverage-report"),
             "permissions": [
+                "Bash(node scripts/hook-runner.mjs *)",
                 "Bash(npm run lint *)",
                 "Bash(npm run typecheck *)",
                 "Bash(npm test *)",
                 "Bash(npx tsc *)",
+                "Bash(npx vitest *)",
+                "Bash(npx jest *)",
             ],
         }
 
     if language == "go":
         return common | {
-            "lint": "gofmt -l . 2>/dev/null | head -10; go vet ./... 2>&1 | tail -20 || true",
-            "typecheck": "go test ./... 2>&1 | tail -20 || true",
-            "impacted_tests": "go test ./... 2>&1 | tail -20 || true",
-            "quality_summary": (
-                "echo '=== Quality Summary ==='; "
-                "gofmt -l . 2>/dev/null | head -10; "
-                "go vet ./... 2>&1 | tail -10 || true; "
-                "go test ./... 2>&1 | tail -10 || true"
-            ),
-            "coverage_report": "go test ./... -cover 2>&1 | tail -20 || true",
+            "lint": hook_runner("post-edit", "lint"),
+            "typecheck": hook_runner("post-edit", "typecheck"),
+            "impacted_tests": hook_runner("post-edit", "impacted-tests"),
+            "quality_summary": hook_runner("stop", "quality-summary"),
+            "coverage_report": hook_runner("stop", "coverage-report"),
             "permissions": [
+                "Bash(node scripts/hook-runner.mjs *)",
                 "Bash(go vet *)",
                 "Bash(go test *)",
                 "Bash(gofmt *)",
@@ -104,17 +130,13 @@ def command_profile(language: str) -> dict[str, str | list[str]]:
 
     if language == "python":
         return common | {
-            "lint": "ruff check . 2>&1 | tail -20 || true",
-            "typecheck": "mypy . --no-error-summary 2>&1 | tail -20 || true",
-            "impacted_tests": "pytest -q 2>&1 | tail -20 || true",
-            "quality_summary": (
-                "echo '=== Quality Summary ==='; "
-                "ruff check . 2>&1 | tail -10 || true; "
-                "mypy . --no-error-summary 2>&1 | tail -10 || true; "
-                "pytest -q 2>&1 | tail -10 || true"
-            ),
-            "coverage_report": "pytest --cov 2>&1 | tail -20 || true",
+            "lint": hook_runner("post-edit", "lint"),
+            "typecheck": hook_runner("post-edit", "typecheck"),
+            "impacted_tests": hook_runner("post-edit", "impacted-tests"),
+            "quality_summary": hook_runner("stop", "quality-summary"),
+            "coverage_report": hook_runner("stop", "coverage-report"),
             "permissions": [
+                "Bash(node scripts/hook-runner.mjs *)",
                 "Bash(ruff check *)",
                 "Bash(mypy *)",
                 "Bash(pytest *)",
@@ -122,27 +144,28 @@ def command_profile(language: str) -> dict[str, str | list[str]]:
         }
 
     return common | {
-        "lint": "echo 'TODO: configure lint command for this repository.'",
-        "typecheck": "echo 'TODO: configure typecheck command for this repository.'",
-        "impacted_tests": "echo 'TODO: configure impacted test command for this repository.'",
-        "quality_summary": "echo 'TODO: configure quality summary commands for this repository.'",
-        "coverage_report": "echo 'TODO: configure coverage command for this repository.'",
-        "permissions": [],
+        "lint": hook_runner("post-edit", "lint"),
+        "typecheck": hook_runner("post-edit", "typecheck"),
+        "impacted_tests": hook_runner("post-edit", "impacted-tests"),
+        "quality_summary": hook_runner("stop", "quality-summary"),
+        "coverage_report": hook_runner("stop", "coverage-report"),
+        "permissions": ["Bash(node scripts/hook-runner.mjs *)"],
     }
 
 
 def build_hooks_settings(quality_path: Path) -> dict[str, Any]:
     repo_root = quality_path.parents[2]
     hooks_intent = parse_hooks_intent(quality_path.read_text(encoding="utf-8"))
-    profile = command_profile(detect_language(repo_root))
+    profile = command_profile(detect_language(repo_root), repo_root)
 
     settings: dict[str, Any] = {"hooks": {}, "permissions": {"allow": list(profile["permissions"])}}
 
     post_edit_flags = hooks_intent.get("post_edit", {})
     post_edit_hooks = []
     for key in ("lint", "typecheck", "impacted_tests"):
-        if post_edit_flags.get(key):
-            post_edit_hooks.append({"type": "command", "command": profile[key], "timeout": 30})
+        command = profile.get(key)
+        if post_edit_flags.get(key) and isinstance(command, str):
+            post_edit_hooks.append({"type": "command", "command": command, "timeout": 30})
     if post_edit_hooks:
         settings["hooks"]["PostToolUse"] = [{"matcher": "Edit|Write", "hooks": post_edit_hooks}]
 
@@ -156,8 +179,9 @@ def build_hooks_settings(quality_path: Path) -> dict[str, Any]:
     stop_flags = hooks_intent.get("on_stop", {})
     stop_hooks = []
     for key in ("coverage_report", "quality_summary", "delivery_summary", "harness_summary"):
-        if stop_flags.get(key):
-            stop_hooks.append({"type": "command", "command": profile[key], "timeout": 30})
+        command = profile.get(key)
+        if stop_flags.get(key) and isinstance(command, str):
+            stop_hooks.append({"type": "command", "command": command, "timeout": 30})
     if stop_hooks:
         settings["hooks"]["Stop"] = [{"matcher": "", "hooks": stop_hooks}]
 

@@ -39,6 +39,9 @@
   - `docs/security/`
   - `docs/plans/`
 - Detect drift between entrypoints, docs, scripts, and actual verification commands.
+- Check referenced paths before trusting generated docs:
+  - Prefer `scripts/harness-audit.py` when present.
+  - Otherwise scan backtick path references in entrypoints and `docs/**/*.md`; report missing files such as stale `lib/content-data.ts` pointers.
 - Summarize what already exists, what is missing, and what should be preserved.
 
 ### Phase 1. Analyze the project
@@ -96,6 +99,10 @@
   - metrics / traces when the project already has or needs them
   - deterministic fixtures or seed scripts
 - If a required surface does not yet exist, create a concrete follow-up plan instead of pretending the harness is complete.
+- For UI/browser verification:
+  - If Playwright or an equivalent browser runner exists, propose or wire a real script such as `npm run smoke:browser`.
+  - If browser automation is unavailable, write an explicit TODO labeled `browser verification unavailable`.
+  - Record the gap in `docs/harness/validation.md` as a known gap, not just chat output.
 
 ### Phase 5. Validate the harness
 - Run or document a dry run using one representative task.
@@ -105,24 +112,28 @@
   - verification commands are real
   - quality gates are runnable
   - reviewer / evaluator separation exists for non-trivial work
+- Run `scripts/harness-audit.py` when available to catch referenced-path drift in entrypoints and harness docs.
 - Record remaining gaps and next iteration steps.
 
-### Phase 6. Reload the session so the new harness takes effect
-- Claude Code loads `.claude/settings.json`, `.claude/agents/`, `.claude/skills/`,
-  and `CLAUDE.md` only at session start. After generating or modifying any of
-  those, instruct the user to reload before verifying:
-  - `/exit` — leave the current session
-  - `claude --resume` (or `cc --resume`) — pick the session that just ended so
-    the conversation context is preserved while the harness is re-read
-  - Trigger one of the newly added skills/agents to confirm it actually loads
-- On-demand rules under `.ai/rules/*.md` are re-read each time `Read` is called,
-  so they do NOT require a reload — only Claude-managed harness files do.
-- For Codex / Copilot / Antigravity, document the equivalent reload step (or
-  note that those tools re-read entrypoints per request) instead of copying the
-  Claude Code instructions.
-- When post-bootstrap verification fails ("the new skill isn't triggering",
-  "hooks didn't run"), check session reload first before debugging the
-  artifacts.
+### Phase 6. Decide whether the client must reload
+- Claude Code:
+  - Claude Code loads `.claude/settings.json`, `.claude/agents/`, `.claude/skills/`,
+    and `CLAUDE.md` only at session start.
+  - If any of those Claude-managed artifacts were generated or modified, instruct the user to reload before verifying:
+    - `/exit` — leave the current session
+    - `claude --resume` (or `cc --resume`) — pick the session that just ended so
+      the conversation context is preserved while the harness is re-read
+    - Trigger one of the newly added skills/agents to confirm it actually loads
+  - If the repo has no `CLAUDE.md` and no `.claude/*` artifacts, record `Claude-managed artifact 없음, reload 불필요`.
+- Codex:
+  - Continue in a fresh request or explicitly ask Codex to re-read `AGENTS.md`, `.ai/entry-points/codex.md`, and `docs/harness/`.
+  - Do not copy Claude Code's `/exit` flow unless the active Codex client documents session-level caching.
+- GitHub Copilot:
+  - Use the client's instruction reload behavior for `.github/copilot-instructions.md`; when unclear, start a new chat/session after changing instructions.
+- Google Antigravity:
+  - Use the client's rule reload behavior for `.agent/rules/rules.md`; when unclear, start a new task/session after changing rules.
+- On-demand rules under `.ai/rules/*.md` are re-read when the client explicitly reads them, so they do not require Claude-style reload by themselves.
+- When post-bootstrap verification fails ("the new skill isn't triggering", "hooks didn't run"), check the relevant client reload/re-read rule before debugging the artifacts.
 
 ## Usage
 - `하네스 구성해. 이 프로젝트는 Next.js + Supabase 기반이고, UI 변경과 API 변경을 모두 검증할 수 있어야 해.`
@@ -139,4 +150,4 @@
 - Do not stop at architecture prose; produce repo artifacts that future runs can reuse.
 - Do not cargo-cult a full harness-100 package into a project. Distill the pattern, then adapt it to the project's actual stack and scope.
 - For bulky examples and decision guides, load `references/` files only when needed.
-- Always remind the user to reload the Claude Code session (`/exit` → `claude --resume`) after producing or modifying `.claude/` artifacts or `CLAUDE.md`; otherwise the new harness will not be active in the current session.
+- Remind the user to reload Claude Code (`/exit` → `claude --resume`) only after producing or modifying `.claude/` artifacts or `CLAUDE.md`; otherwise report that no Claude-managed reload is required.
