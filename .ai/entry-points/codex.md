@@ -13,12 +13,17 @@
 - Security → `.ai/rules/security/security-guide.md`
 - Testing → `.ai/rules/testing/testing-guide.md`
 - Agent/skill authoring → `.ai/rules/development/agent-authoring.md`
-- Harness engineering → `.ai/rules/workflow/harness-engineering.md`
+- Harness engineering / repo operating model → `.ai/rules/workflow/harness-engineering.md`
 - Spec workflow → `.ai/rules/workflow/spec-workflow.md`
 - Long-running / multi-session tasks → `.ai/rules/workflow/long-running-guide.md`
 - Team workflow → `.ai/rules/workflow/team-workflow.md`
 - Harness bootstrap requests like `하네스 구성해`, `하네스 설치해`, `하네스 세팅해`, `하네스 셋팅해` → `.ai/skills/harness/SKILL.md`
 - Language rules → `.ai/rules/language/{lang}.md`
+
+## Harness Load Timing
+- Codex reads `AGENTS.md` and referenced repo files as part of the active request context.
+- After changing `AGENTS.md`, `.ai/entry-points/codex.md`, or `docs/harness/`, continue in a fresh request or explicitly ask Codex to re-read those files.
+- Do not copy Claude Code's `/exit` → `claude --resume` reload instructions for Codex unless a specific Codex client documents session-level caching.
 
 ## Repository System of Record
 - `docs/index.md` is the starting map for durable project knowledge

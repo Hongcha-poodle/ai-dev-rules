@@ -29,12 +29,29 @@ function Normalize-Choice {
     }
 }
 
-if ($env:AI_TOOL) {
-    $choice = Normalize-Choice $env:AI_TOOL
-    if (-not $choice) {
-        Write-Error "지원하지 않는 AI_TOOL 값입니다: $($env:AI_TOOL)"
-        exit 1
+function Enable-Choice {
+    param([string]$Choice)
+
+    switch ($Choice) {
+        "1" { $script:installCopilot = $true }
+        "2" { $script:installClaude = $true }
+        "3" { $script:installAntigravity = $true }
+        "4" { $script:installCodex = $true }
+        "5" {
+            $script:installCopilot = $true
+            $script:installClaude = $true
+            $script:installAntigravity = $true
+            $script:installCodex = $true
+        }
+        default {
+            Write-Error "잘못된 선택입니다: $Choice"
+            exit 1
+        }
     }
+}
+
+if ($env:AI_TOOL) {
+    $choiceInput = $env:AI_TOOL
 } else {
     Write-Host "========================================"
     Write-Host "어떤 AI 개발 도구를 사용하시겠습니까?"
@@ -43,14 +60,25 @@ if ($env:AI_TOOL) {
     Write-Host "3. Google Antigravity"
     Write-Host "4. OpenAI Codex"
     Write-Host "5. 모두 설치"
+    Write-Host "여러 개를 선택하려면 쉼표로 구분하세요. 예: 2,3,4"
     Write-Host "========================================"
-    $choice = Read-Host "번호를 선택하세요 (1-5)"
+    $choiceInput = Read-Host "번호를 선택하세요 (1-5, 복수 선택 가능)"
 }
 
-$installCopilot = ($choice -eq '1' -or $choice -eq '5')
-$installClaude = ($choice -eq '2' -or $choice -eq '5')
-$installAntigravity = ($choice -eq '3' -or $choice -eq '5')
-$installCodex = ($choice -eq '4' -or $choice -eq '5')
+$installCopilot = $false
+$installClaude = $false
+$installAntigravity = $false
+$installCodex = $false
+
+$choiceTokens = $choiceInput -split '[,\s;+/]+' | Where-Object { $_ }
+foreach ($token in $choiceTokens) {
+    $choice = Normalize-Choice $token
+    if (-not $choice) {
+        Write-Error "지원하지 않는 AI_TOOL/선택 값입니다: $token"
+        exit 1
+    }
+    Enable-Choice $choice
+}
 
 if (-not ($installCopilot -or $installClaude -or $installAntigravity -or $installCodex)) {
     Write-Error "잘못된 선택입니다. 스크립트를 종료합니다."

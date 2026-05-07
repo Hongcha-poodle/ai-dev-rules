@@ -63,17 +63,33 @@ ai-dev-rules/
 bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
 ```
 
+Claude Code, OpenAI Codex, Google Antigravity만 설치하려면:
+
+```bash
+AI_TOOL=claude,codex,antigravity bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
+```
+
 **Windows (PowerShell)**
 
 ```powershell
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
 ```
 
+Claude Code, OpenAI Codex, Google Antigravity만 설치하려면:
+
+```powershell
+$env:AI_TOOL = "claude,codex,antigravity"
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
+Remove-Item Env:AI_TOOL -ErrorAction SilentlyContinue
+```
+
+대화형 실행에서는 `2,3,4`처럼 쉼표로 여러 도구를 선택할 수 있습니다. `AI_TOOL=all` 또는 `5`는 GitHub Copilot까지 포함한 전체 설치입니다.
+
 ### 셋업 스크립트 동작
 
 스크립트가 자동으로 수행하는 작업:
 
-1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 선택 또는 전체 설치
+1. **AI 도구 선택** — VS Code (GitHub Copilot), Claude Code, Google Antigravity, OpenAI Codex 중 단일/복수 선택 또는 전체 설치
 2. **`.ai/` 규칙 다운로드** — `core.md`, `config/quality.yaml`, 모든 `rules/` 파일, `entry-points/` 관리 템플릿, `skills/README.md`
    - 포함 스킬: `harness` (`하네스 구성해`, `build a harness for this project` 요청용)
 3. **`docs/` 권장 구조 생성** — 아래 표준 디렉토리와 기본 파일을 생성합니다:
@@ -157,8 +173,26 @@ Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-
 
 프로젝트에 설치된 규칙을 최신 버전으로 업데이트하려면 셋업 스크립트를 다시 실행하세요.
 
+Claude Code, OpenAI Codex, Google Antigravity를 함께 쓰는 프로젝트라면 설치 때와 같은 조합을 지정해서 다시 실행합니다.
+
+**macOS / Linux**
+
+```bash
+AI_TOOL=claude,codex,antigravity bash <(curl -fsSL "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.sh")
+```
+
+**Windows (PowerShell)**
+
+```powershell
+$env:AI_TOOL = "claude,codex,antigravity"
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Hongcha-poodle/ai-dev-rules/main/templates/setup-project.ps1" | Invoke-Expression
+Remove-Item Env:AI_TOOL -ErrorAction SilentlyContinue
+```
+
+GitHub Copilot까지 포함한 전체 업데이트가 필요하면 `AI_TOOL=all` 또는 대화형 선택 `5`를 사용합니다.
+
 - 기존 `.ai/` 규칙 파일과 `.ai/entry-points/`는 최신 버전으로 **덮어쓰기**됩니다.
-- 진입점 파일(`CLAUDE.md`, `AGENTS.md` 등)은 이미 존재하면 **건너뜁니다** — 프로젝트별 커스터마이징이 유지됩니다.
+- 진입점 파일(`CLAUDE.md`, `AGENTS.md`, `.agent/rules/rules.md` 등)은 이미 존재하면 **건너뜁니다** — 프로젝트별 커스터마이징이 유지됩니다.
 - 워크플로 템플릿 변경 사항은 `.ai/entry-points/`를 통해 기존 프로젝트에도 자동 반영됩니다.
 - `docs/` 디렉토리의 기존 파일도 건너뜁니다.
 

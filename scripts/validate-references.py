@@ -50,6 +50,28 @@ def path_exists(candidate: str, origin: Path) -> bool:
     return False
 
 
+def should_validate_inline_path(token: str, origin: Path) -> bool:
+    if any(ch in token for ch in (" ", ">", ";", "|", "(", ")", "*")):
+        return False
+    if token.startswith(("http://", "https://", "mailto:", "/", "#")):
+        return False
+    if "://" in token:
+        return False
+
+    if any(marker in token for marker in ("{lang}", "{tool}", "{name}", "{skill}", "{agent}", "{path}", "{file}", "{command}")):
+        return False
+
+    repo_relative_prefixes = (".ai/", "scripts/", "templates/", "fixtures/")
+    if token.startswith(repo_relative_prefixes):
+        return True
+
+    skill_dir = root / ".ai/skills/harness"
+    if origin == skill_dir / "SKILL.md" and token.startswith(("references/", "templates/")):
+        return True
+
+    return False
+
+
 def validate_core_context_loading() -> None:
     core_path = root / ".ai/core.md"
     text = read_text(core_path)
@@ -72,9 +94,10 @@ def validate_core_context_loading() -> None:
         trigger, file_ref = cells
         if trigger == "Trigger" or set(trigger) == {"-"}:
             continue
-        files.add(file_ref)
-        if not path_exists(file_ref, core_path):
-            fail(f"{core_path}: missing file referenced in Context Loading -> {file_ref}")
+        normalized_ref = file_ref.strip().strip("`")
+        files.add(normalized_ref)
+        if not path_exists(normalized_ref, core_path):
+            fail(f"{core_path}: missing file referenced in Context Loading -> {normalized_ref}")
 
     expected = {
         ".ai/rules/security/security-guide.md",
@@ -213,11 +236,7 @@ def validate_markdown_links() -> None:
         if path == root / "README.md" or path == root / ".ai/core.md" or path.parent == root / ".ai/entry-points" or path == root / ".ai/skills/harness/SKILL.md":
             for candidate in inline_pattern.findall(text):
                 token = candidate.strip()
-                if any(ch in token for ch in (" ", ">", ";", "|", "(", ")")):
-                    continue
-                if "/" not in token and not token.endswith((".md", ".json", ".yaml", ".yml", ".sh", ".py", ".ps1")):
-                    continue
-                if token.startswith(("http://", "https://")):
+                if not should_validate_inline_path(token, path):
                     continue
                 if not path_exists(token, path):
                     fail(f"{path}: broken inline path reference -> {token}")

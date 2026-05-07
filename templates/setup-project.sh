@@ -15,7 +15,8 @@ install_antigravity=false
 install_codex=false
 
 normalize_choice() {
-  local normalized="${1,,}"
+  local normalized
+  normalized="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
   case "$normalized" in
     1|copilot|github-copilot|vscode) echo "1" ;;
     2|claude|claude-code) echo "2" ;;
@@ -26,18 +27,48 @@ normalize_choice() {
   esac
 }
 
+enable_choice() {
+  case "$1" in
+    1) install_copilot=true ;;
+    2) install_claude=true ;;
+    3) install_antigravity=true ;;
+    4) install_codex=true ;;
+    5)
+      install_copilot=true
+      install_claude=true
+      install_antigravity=true
+      install_codex=true
+      ;;
+    *)
+      echo "잘못된 선택입니다: $1" >&2
+      exit 1
+      ;;
+  esac
+}
+
+apply_choices() {
+  local raw="$1"
+  local token
+  local normalized
+
+  for token in $(printf '%s' "$raw" | tr ',;+/' '    '); do
+    normalized="$(normalize_choice "$token")"
+    if [[ -z "$normalized" ]]; then
+      echo "지원하지 않는 AI_TOOL/선택 값입니다: $token" >&2
+      exit 1
+    fi
+    enable_choice "$normalized"
+  done
+}
+
 echo "AI Dev Rules 셋업을 시작합니다..."
 echo "대상 프로젝트: $PROJECT_PATH"
 
 # --- 0. AI 도구 선택 ---
-choice=""
+choice_input=""
 
 if [[ -n "${AI_TOOL:-}" ]]; then
-  choice="$(normalize_choice "${AI_TOOL}")"
-  if [[ -z "$choice" ]]; then
-    echo "지원하지 않는 AI_TOOL 값입니다: ${AI_TOOL}" >&2
-    exit 1
-  fi
+  choice_input="${AI_TOOL}"
 else
   echo "========================================"
   echo "어떤 AI 개발 도구를 사용하시겠습니까?"
@@ -46,27 +77,23 @@ else
   echo "3. Google Antigravity"
   echo "4. OpenAI Codex"
   echo "5. 모두 설치"
+  echo "여러 개를 선택하려면 쉼표로 구분하세요. 예: 2,3,4"
   echo "========================================"
 
   if [[ -t 0 ]]; then
-    read -r -p "번호를 선택하세요 (1-5): " choice
+    read -r -p "번호를 선택하세요 (1-5, 복수 선택 가능): " choice_input
   else
-    echo "비대화형 모드에서는 AI_TOOL 환경 변수를 설정해야 합니다. 예: AI_TOOL=claude" >&2
+    echo "비대화형 모드에서는 AI_TOOL 환경 변수를 설정해야 합니다. 예: AI_TOOL=claude,codex,antigravity" >&2
     exit 1
   fi
 fi
 
-case "$choice" in
-  1) install_copilot=true ;;
-  2) install_claude=true ;;
-  3) install_antigravity=true ;;
-  4) install_codex=true ;;
-  5) install_copilot=true; install_claude=true; install_antigravity=true; install_codex=true ;;
-  *)
-    echo "잘못된 선택입니다. 스크립트를 종료합니다." >&2
-    exit 1
-    ;;
-esac
+apply_choices "$choice_input"
+
+if [ "$install_copilot" != true ] && [ "$install_claude" != true ] && [ "$install_antigravity" != true ] && [ "$install_codex" != true ]; then
+  echo "잘못된 선택입니다. 스크립트를 종료합니다." >&2
+  exit 1
+fi
 
 # --- 1. 파일 다운로드 함수 ---
 download_file() {
